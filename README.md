@@ -9,7 +9,7 @@ Portable agent skills and tool adapters.
 
 ## Current Skills
 
-- `create-or-refactor-agents-md` creates or refactors `AGENTS.md` and related agent-instruction files into a progressive-disclosure layout.
+- `init-or-refactor-agents-md` initializes or refactors `AGENTS.md` and related agent-instruction files into a progressive-disclosure layout.
 
 ## Repository Policy
 

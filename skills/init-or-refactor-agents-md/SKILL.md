@@ -1,13 +1,13 @@
 ---
-name: create-or-refactor-agents-md
-description: Create or refactor an AGENTS.md file or equivalent AI-agent instruction set into a progressive-disclosure structure with a minimal root file and linked detail docs. Use when the user asks to create, draft, reorganize, or consolidate AGENTS.md, CLAUDE.md, .cursorrules, or similar instruction files, or to generate a docs/agents layout before writing changes.
+name: init-or-refactor-agents-md
+description: Initialize or refactor an AGENTS.md file or equivalent AI-agent instruction set into a progressive-disclosure structure with a minimal root file and linked detail docs. Use when the user asks to initialize, draft, reorganize, or consolidate AGENTS.md, CLAUDE.md, .cursorrules, or similar instruction files, or to generate a docs/agents layout before writing changes.
 ---
 
-# Create Or Refactor AGENTS.md
+# Init Or Refactor AGENTS.md
 
 > Canonical source of truth for this skill. Tool-specific wrappers should adapt invocation and metadata, not fork the workflow.
 
-Use this skill to create or refactor an AGENTS.md file, or an equivalent instruction file for AI coding agents, into a progressive-disclosure layout: essential guidance in the root file and detailed guidance in linked documents.
+Use this skill to initialize or refactor an AGENTS.md file, or an equivalent instruction file for AI coding agents, into a progressive-disclosure layout: essential guidance in the root file and detailed guidance in linked documents.
 
 ## Workflow
 
