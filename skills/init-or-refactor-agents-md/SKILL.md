@@ -9,6 +9,13 @@ description: Initialize or refactor an AGENTS.md file or equivalent AI-agent ins
 
 Use this skill to initialize or refactor an AGENTS.md file, or an equivalent instruction file for AI coding agents, into a progressive-disclosure layout: essential guidance in the root file and detailed guidance in linked documents.
 
+## Provenance
+
+- The progressive-disclosure refactor workflow in this skill is adapted from Matt Pocock's article, [A Complete Guide To AGENTS.md](https://www.aihero.dev/a-complete-guide-to-agents-md), especially its "Fix A Broken AGENTS.md With This Prompt" section. This source was checked on 2026-04-07.
+- Appendix A bundles local adapted copies of [mattpocock/skills](https://github.com/mattpocock/skills/tree/main/tdd) TDD documents. Those source files were originally retrieved on 2026-03-26 and rechecked against upstream on 2026-04-07.
+- The `deep modules` concept referenced in Appendix A originates with John Ousterhout's [A Philosophy of Software Design](https://www.web.stanford.edu/~ouster/cgi-bin/aposd.php). That conceptual attribution was rechecked on 2026-04-07.
+- Local additions beyond the upstream sources include wrapper/redirection guidance, required seeded docs, and the structured output format.
+
 ## Workflow
 
 ### 1. Gather instruction sources
@@ -45,6 +52,8 @@ Keep only the material that belongs in the root `AGENTS.md`:
 - Critical constraints that apply to every task.
 
 Move everything else into linked documents.
+
+Prefer stable capability or domain guidance over brittle file-path maps. Exact paths go stale quickly, so only keep them when they are unusually stable and essential for every task.
 
 ### 4. Group the remaining guidance
 
@@ -86,6 +95,8 @@ Detailed guidelines are organized by topic:
 #### 5b. `docs/agents/` structure
 
 List each proposed file and the instructions that belong in it. The skill may create missing files, edit existing files, and move or rename files when that improves the instruction structure.
+
+In monorepos or multi-package repositories, propose nested `AGENTS.md` files only when directory-scoped guidance materially differs from the repository root.
 
 #### 5c. Instruction redirection
 
@@ -161,7 +172,7 @@ Present the refactor as:
 ````markdown
 # Test-Driven Development
 
-> Adapted local copy of `mattpocock/skills/tdd/SKILL.md`, retrieved on 2026-03-26.
+> Adapted local copy of `mattpocock/skills/tdd/SKILL.md`, retrieved on 2026-03-26 and rechecked against upstream on 2026-04-07.
 
 ## Philosophy
 
@@ -270,7 +281,7 @@ After all tests pass, look for [refactor candidates](refactoring.md):
 ````markdown
 # Good and Bad Tests
 
-> Adapted local copy of `mattpocock/skills/tdd/tests.md`, retrieved on 2026-03-26.
+> Adapted local copy of `mattpocock/skills/tdd/tests.md`, retrieved on 2026-03-26 and rechecked against upstream on 2026-04-07.
 
 ## Good Tests
 
@@ -334,7 +345,7 @@ test "creating a user makes that user retrievable":
 ````markdown
 # When to Mock
 
-> Adapted local copy of `mattpocock/skills/tdd/mocking.md`, retrieved on 2026-03-26.
+> Adapted local copy of `mattpocock/skills/tdd/mocking.md`, retrieved on 2026-03-26 and rechecked against upstream on 2026-04-07.
 
 Mock at **system boundaries** only:
 
@@ -397,7 +408,7 @@ The SDK approach means:
 ````markdown
 # Deep Modules
 
-> Local copy of `mattpocock/skills/tdd/deep-modules.md`, retrieved on 2026-03-26.
+> Local copy of `mattpocock/skills/tdd/deep-modules.md`, retrieved on 2026-03-26 and rechecked against upstream on 2026-04-07.
 
 From "A Philosophy of Software Design":
 
@@ -437,7 +448,7 @@ When designing interfaces, ask:
 ````markdown
 # Interface Design for Testability
 
-> Adapted local copy of `mattpocock/skills/tdd/interface-design.md`, retrieved on 2026-03-26.
+> Adapted local copy of `mattpocock/skills/tdd/interface-design.md`, retrieved on 2026-03-26 and rechecked against upstream on 2026-04-07.
 
 Good interfaces make testing natural:
 
@@ -474,7 +485,7 @@ Good interfaces make testing natural:
 ````markdown
 # Refactor Candidates
 
-> Adapted local copy of `mattpocock/skills/tdd/refactoring.md`, retrieved on 2026-03-26.
+> Adapted local copy of `mattpocock/skills/tdd/refactoring.md`, retrieved on 2026-03-26 and rechecked against upstream on 2026-04-07.
 
 After TDD cycle, look for:
 
