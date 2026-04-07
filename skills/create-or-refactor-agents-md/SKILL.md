@@ -1,18 +1,142 @@
 ---
-name: refactor-agents-md
-description: Legacy alias for create-or-refactor-agents-md. Use when the user asks to refactor AGENTS.md and compatibility with the old skill name matters.
+name: create-or-refactor-agents-md
+description: Create or refactor an AGENTS.md file or equivalent AI-agent instruction set into a progressive-disclosure structure with a minimal root file and linked detail docs. Use when the user asks to create, draft, reorganize, or consolidate AGENTS.md, CLAUDE.md, .cursorrules, or similar instruction files, or to generate a docs/agents layout before writing changes.
 ---
 
-# Refactor AGENTS.md
+# Create Or Refactor AGENTS.md
 
-This is a compatibility alias.
+> Canonical source of truth for this skill. Tool-specific wrappers should adapt invocation and metadata, not fork the workflow.
 
-Load and follow `../create-or-refactor-agents-md/SKILL.md`.
+Use this skill to create or refactor an AGENTS.md file, or an equivalent instruction file for AI coding agents, into a progressive-disclosure layout: essential guidance in the root file and detailed guidance in linked documents.
 
-Requirements:
+## Workflow
 
-- Treat `create-or-refactor-agents-md` as the source of truth.
-- Use this alias only to preserve compatibility with the previous skill name.
+### 1. Gather instruction sources
+
+Before analyzing, collect all existing agent instructions in the repository:
+
+1. Read `AGENTS.md` if it exists.
+2. Read `CLAUDE.md`, `.cursorrules`, and other platform-specific instruction files.
+3. Check common locations such as `docs/AGENTS.md` or `.github/AGENTS.md`.
+
+Combine the discovered instructions into a single corpus for analysis.
+
+If the project does not already have an `AGENTS.md`, use the gathered sources to synthesize the initial root file and linked docs structure instead of treating the task as a pure refactor.
+
+### 2. Find contradictions
+
+Scan the corpus for instructions that conflict with each other. For each contradiction:
+
+1. Present both conflicting instructions clearly.
+2. Recommend which version to keep and why.
+3. Ask the user to confirm before proceeding.
+
+If no contradictions are found, state "No contradictions detected" and continue.
+
+### 3. Identify what belongs in the root file
+
+Keep only the material that belongs in the root `AGENTS.md`:
+
+- One-sentence project description.
+- Build system or package manager, only when it is non-standard for the ecosystem.
+- Non-standard build, lint, typecheck, or test commands.
+- Critical constraints that apply to every task.
+
+Move everything else into linked documents.
+
+### 4. Group the remaining guidance
+
+Organize the rest into logical categories such as:
+
+- Language conventions
+- Testing patterns
+- API design
+- Git workflow
+- Architecture
+- Security
+- Performance
+
+### 5. Propose the target structure
+
+Present:
+
+#### 5a. Minimal root `AGENTS.md`
+
+```markdown
+# Project Name
+
+One-sentence description.
+
+## Quick Reference
+
+- Build: `command`
+- Test: `command`
+- Lint: `command`
+
+## Guidelines
+
+Detailed guidelines are organized by topic:
+
+- [Test-Driven Development](docs/agents/test-driven-development.md) - Mandatory Red-Green-Refactor protocol
+- ...links to each file in docs/agents/ with a one-sentence description
+```
+
+#### 5b. `docs/agents/` structure
+
+List each proposed file and the instructions that belong in it.
+
+#### 5c. Instruction redirection
+
+Recommend replacing `CLAUDE.md` and other platform-specific instruction files with:
+
+```markdown
+@AGENTS.md
+```
+
+Use this only where the platform supports include-style indirection.
+
+### 6. Seed required docs when missing
+
+Create or propose:
+
+- `docs/agents/test-driven-development.md`
+- `docs/agents/tests.md`
+- `docs/agents/mocking.md`
+- `docs/agents/deep-modules.md`
+- `docs/agents/interface-design.md`
+- `docs/agents/refactoring.md`
+- `docs/agents/architecture.md`
+
+Seed the TDD files from the bundled doc set in Appendix A below, not from an upstream GitHub source or a filesystem search outside the current repository. Preserve each provenance note exactly as bundled. Seed the rest with concrete, actionable guidance rather than vague principles.
+
+### 7. Flag deletions
+
+Identify redundant, vague, or obvious instructions to remove, such as:
+
+- "Write clean code"
+- "Follow best practices"
+- "Use meaningful names"
+- "Keep things simple"
+- "Be consistent"
+- "Think about performance"
+- "Don't introduce bugs"
+- "Test your changes"
+- "Make sure code compiles"
+
+Explain why each flagged item should be deleted.
+
+## Output format
+
+Present the refactor as:
+
+1. Sources gathered
+2. Contradictions found
+3. Proposed root `AGENTS.md`
+4. Proposed `docs/agents/` structure
+5. Full content of each new file
+6. Items flagged for deletion
+
+## Appendix A: Bundled Seed Docs
 
 ### `docs/agents/test-driven-development.md`
 
