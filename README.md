@@ -10,7 +10,6 @@ Portable agent skills and tool adapters.
 ## Current Skills
 
 - `create-or-refactor-agents-md` creates or refactors `AGENTS.md` and related agent-instruction files into a progressive-disclosure layout.
-- `refactor-agents-md` is a compatibility alias for the canonical skill above.
 
 ## Repository Policy
 
