@@ -11,6 +11,19 @@ Portable agent skills and tool adapters.
 
 - `init-or-refactor-agents-md` initializes or refactors `AGENTS.md` and related agent-instruction files into a progressive-disclosure layout.
 
+## Tool Requirements
+
+- Gemini CLI should be configured to load `AGENTS.md` as a project context file.
+- The official Gemini CLI `context.fileName` setting accepts a string or an array. To prefer `AGENTS.md` while retaining existing `GEMINI.md` support, use:
+
+```json
+{
+  "context": {
+    "fileName": ["AGENTS.md", "GEMINI.md"]
+  }
+}
+```
+
 ## Repository Policy
 
 - Keep behavioral logic in `skills/*/SKILL.md`.

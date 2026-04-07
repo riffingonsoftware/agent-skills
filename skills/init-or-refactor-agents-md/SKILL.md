@@ -23,13 +23,15 @@ Combine the discovered instructions into a single corpus for analysis.
 
 If the project does not already have an `AGENTS.md`, use the gathered sources to synthesize the initial root file and linked docs structure instead of treating the task as a pure refactor.
 
+Before writing any files for an initialization case, present the proposed structure and wait for user confirmation.
+
 ### 2. Find contradictions
 
 Scan the corpus for instructions that conflict with each other. For each contradiction:
 
 1. Present both conflicting instructions clearly.
-2. Recommend which version to keep and why.
-3. Ask the user to confirm before proceeding.
+2. Explain the tradeoff between them.
+3. Ask the user which version to keep before proceeding.
 
 If no contradictions are found, state "No contradictions detected" and continue.
 
@@ -83,17 +85,26 @@ Detailed guidelines are organized by topic:
 
 #### 5b. `docs/agents/` structure
 
-List each proposed file and the instructions that belong in it.
+List each proposed file and the instructions that belong in it. The skill may create missing files, edit existing files, and move or rename files when that improves the instruction structure.
 
 #### 5c. Instruction redirection
 
-Recommend replacing `CLAUDE.md` and other platform-specific instruction files with:
+Treat `AGENTS.md` as the source of truth. Only introduce tool-specific redirect or context files where the tool actually requires them.
+
+For example:
+
+- `CLAUDE.md` may redirect to `AGENTS.md` when Claude is in use.
+- Gemini CLI can be configured to load `AGENTS.md` via its `context.fileName` setting instead of requiring a project-local `GEMINI.md`.
+
+Do not assume every tool-specific file should exist. Verify current tool requirements before adding wrappers or redirects.
+
+Where a redirect is required and the tool supports include-style indirection, use:
 
 ```markdown
 @AGENTS.md
 ```
 
-Use this only where the platform supports include-style indirection.
+Otherwise, keep the tool-specific file minimal and make it point back to the `AGENTS.md` source of truth as directly as the tool allows.
 
 ### 6. Seed required docs when missing
 
@@ -105,9 +116,16 @@ Create or propose:
 - `docs/agents/deep-modules.md`
 - `docs/agents/interface-design.md`
 - `docs/agents/refactoring.md`
-- `docs/agents/architecture.md`
+- `docs/agents/dependencies.md`
 
-Seed the TDD files from the bundled doc set in Appendix A below, not from an upstream GitHub source or a filesystem search outside the current repository. Preserve each provenance note exactly as bundled. Seed the rest with concrete, actionable guidance rather than vague principles.
+Seed the TDD files from the bundled doc set in Appendix A below, not from an upstream GitHub source or a filesystem search outside the current repository. Preserve each provenance note exactly as bundled.
+
+For non-TDD docs:
+
+- Put the Rob Pike dependency-management principle in `docs/agents/dependencies.md`.
+- Generate the remaining guidance from the actual project structure, stack, and conventions instead of using generic canned doctrine.
+- Add project-specific docs such as `architecture.md`, `security.md`, `git-workflow.md`, or language-conventions docs when the repository actually needs them.
+- If the current project structure or conventions conflict with strong ecosystem expectations for the stack, raise that as an explicit decision for the user instead of silently codifying the status quo.
 
 ### 7. Flag deletions
 
