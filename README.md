@@ -9,13 +9,7 @@ Portable agent skills and tool adapters.
 
 ## Current Skills
 
-- `init-or-refactor-agents-md` initializes or refactors `AGENTS.md` and related agent-instruction files into a progressive-disclosure layout.
-
-## Provenance
-
-- `init-or-refactor-agents-md` draws its progressive-disclosure `AGENTS.md` refactor workflow from Matt Pocock's article, [A Complete Guide To AGENTS.md](https://www.aihero.dev/a-complete-guide-to-agents-md). This repository was checked against that article on 2026-04-07.
-- Appendix seed docs embedded by `init-or-refactor-agents-md` are local adapted copies of files from [mattpocock/skills](https://github.com/mattpocock/skills/tree/main/tdd). They were originally retrieved on 2026-03-26 and rechecked against upstream on 2026-04-07.
-- The `deep modules` concept cited by the seed docs originates with John Ousterhout's [A Philosophy of Software Design](https://www.web.stanford.edu/~ouster/cgi-bin/aposd.php). That conceptual attribution was rechecked on 2026-04-07.
+- `init-or-refactor-agents-md` initializes or compresses agent instruction files into one short `AGENTS.md` that coding agents are likely to follow. It always includes a direct TDD requirement.
 
 ## Tool Requirements
 
