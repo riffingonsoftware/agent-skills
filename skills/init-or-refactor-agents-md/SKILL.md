@@ -25,6 +25,7 @@ Goal: produce one short, high-signal `AGENTS.md` that agents will actually follo
    - one-line project description
    - non-obvious commands
    - hard rules, including TDD
+   - simplification discipline (refactor step + proactive cleanup)
    - dependency policy
    - critical safety or approval rules
 
@@ -47,16 +48,20 @@ Ask for confirmation before writing files.
 # Project Name
 
 ## Commands
+
 - Build: `...`
 - Test: `...`
 - Lint: `...`
 
 ## Rules
+
 - TDD required: red -> green -> refactor.
+- Refactor step: simplify without changing behavior — cut nesting, dead code, and redundant abstractions.
 - Test behavior, not internals.
 - Mock only external systems.
 - Prefer stdlib and existing deps.
 - Keep diffs small.
+- Proactively simplify touched code; prefer explicit over clever.
 - Ask before risky or destructive changes.
 - Run relevant checks before finishing.
 ```
@@ -64,6 +69,7 @@ Ask for confirmation before writing files.
 ## Output
 
 Present:
+
 1. Sources gathered
 2. Conflicts found
 3. Proposed `AGENTS.md`
