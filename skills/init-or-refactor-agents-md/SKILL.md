@@ -5,7 +5,7 @@ description: Create or compress project agent instructions into one short AGENTS
 
 # Init Or Refactor AGENTS.md
 
-Goal: produce one short, high-signal `AGENTS.md` that agents will actually follow. Prefer one file.
+Goal: produce one short, high-signal `AGENTS.md` that agents will actually follow. Prefer one canonical file.
 
 ## Workflow
 
@@ -38,7 +38,7 @@ Goal: produce one short, high-signal `AGENTS.md` that agents will actually follo
    - State TDD briefly and operationally.
    - Do not create linked docs unless explicitly asked.
    - Do not create tool-specific files unless needed.
-   - If wrappers are needed, keep them minimal and point back to `AGENTS.md`.
+   - If `CLAUDE.md` is needed, its entire contents must be exactly `@AGENTS.md`.
 
 Ask for confirmation before writing files.
 
