@@ -55,10 +55,11 @@ Ask for confirmation before writing files.
 
 ## Rules
 
-- TDD required: red -> green -> refactor.
-- Refactor step: simplify without changing behavior — cut nesting, dead code, and redundant abstractions.
-- Test behavior, not internals.
-- Mock only external systems.
+- TDD required: failing behavior test -> minimal fix -> refactor.
+- Work in vertical slices: one behavior at a time.
+- Test through public interfaces; don’t test private internals.
+- Mock only system boundaries.
+- Refactor only when green: simplify touched code without changing behavior.
 - Prefer stdlib and existing deps.
 - Keep diffs small.
 - Proactively simplify touched code; prefer explicit over clever.
