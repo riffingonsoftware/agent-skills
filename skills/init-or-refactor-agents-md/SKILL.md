@@ -1,6 +1,6 @@
 ---
 name: init-or-refactor-agents-md
-description: Create or compress project agent instructions into one short AGENTS.md with explicit TDD.
+description: Create or compress project agent instructions into one short AGENTS.md with pragmatic behavior-first testing guidance.
 ---
 
 # Init Or Refactor AGENTS.md
@@ -18,13 +18,13 @@ Goal: produce one short, high-signal `AGENTS.md` that agents will actually follo
 
 2. Show conflicts.
    - If instructions disagree, show both and ask which one wins.
-   - TDD is required by default. Flag any instruction that weakens or contradicts it.
+   - Behavior-changing work should use TDD by default. Flag instructions that encourage implementation-detail tests, vanity coverage targets, or tests without clear behavioral value.
 
 3. Draft one short `AGENTS.md`.
    Keep only:
    - one-line project description
    - non-obvious commands
-   - hard rules, including TDD
+   - hard rules, including behavior-first testing
    - simplification discipline (refactor step + proactive cleanup)
    - dependency policy
    - critical safety or approval rules
@@ -35,7 +35,7 @@ Goal: produce one short, high-signal `AGENTS.md` that agents will actually follo
 5. Write terse rules.
    - Prefer bullets over prose.
    - Prefer rules over explanations.
-   - State TDD briefly and operationally.
+   - State testing expectations briefly and operationally.
    - Do not create linked docs unless explicitly asked.
    - Do not create tool-specific files unless needed.
    - If `CLAUDE.md` is needed, its entire contents must be exactly `@AGENTS.md`.
@@ -55,9 +55,11 @@ Ask for confirmation before writing files.
 
 ## Rules
 
-- TDD required: failing behavior test -> minimal fix -> refactor.
+- Use TDD for behavior changes: failing behavior test -> minimal fix -> refactor.
+- Do not add tests for their own sake; skip docs-only, formatting-only, and mechanical changes unless risk justifies them.
 - Work in vertical slices: one behavior at a time.
 - Test through public interfaces; don’t test private internals.
+- Prefer focused behavioral proof over coverage targets or test-count goals.
 - Mock only system boundaries.
 - Refactor only when green: simplify touched code without changing behavior.
 - Prefer stdlib and existing deps.
