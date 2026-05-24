@@ -20,13 +20,15 @@ Goal: produce one short, high-signal `AGENTS.md` that agents will actually follo
    - If instructions disagree, show both and ask which one wins.
    - Behavior-changing work should use TDD by default. Flag instructions that encourage implementation-detail tests, vanity coverage targets, or tests without clear behavioral value.
    - Flag instructions that allow adding dependencies without user approval.
+   - Flag instructions that require preserving local patterns when they are unsound, accidental, or undocumented.
+   - Flag instructions that discourage necessary rewrites solely because they are larger.
 
 3. Draft one short `AGENTS.md`.
    Keep only:
    - one-line project description
    - non-obvious commands
    - hard rules, including behavior-first testing
-   - simplification discipline (refactor step + proactive cleanup)
+   - simplification discipline, quality bar, and rewrite guidance
    - dependency policy
    - critical safety or approval rules
 
@@ -37,6 +39,8 @@ Goal: produce one short, high-signal `AGENTS.md` that agents will actually follo
    - Prefer bullets over prose.
    - Prefer rules over explanations.
    - State testing expectations briefly and operationally.
+   - State dependency approval requirements explicitly.
+   - State when to challenge local patterns and consider rewrites.
    - Do not create linked docs unless explicitly asked.
    - Do not create tool-specific files unless needed.
    - If `CLAUDE.md` is needed, its entire contents must be exactly `@AGENTS.md`.
@@ -67,6 +71,9 @@ Ask for confirmation before writing files.
 - Before proposing a dependency, check maintenance, license, docs, security, and transitive deps.
 - Keep diffs small.
 - Proactively simplify touched code; prefer explicit over clever.
+- Follow existing patterns only when they are sound and intentional; proactively challenge them when they conflict with best practices or project goals.
+- Prefer the correct fix over the smallest patch; propose or perform rewrites when local structure is the problem.
+- Do not avoid necessary redesign because it is larger; explain the tradeoff and proceed in reviewable slices.
 - Ask before risky or destructive changes.
 - Run relevant checks before finishing.
 ```
