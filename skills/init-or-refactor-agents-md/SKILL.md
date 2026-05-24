@@ -19,6 +19,7 @@ Goal: produce one short, high-signal `AGENTS.md` that agents will actually follo
 2. Show conflicts.
    - If instructions disagree, show both and ask which one wins.
    - Behavior-changing work should use TDD by default. Flag instructions that encourage implementation-detail tests, vanity coverage targets, or tests without clear behavioral value.
+   - Flag instructions that allow adding dependencies without user approval.
 
 3. Draft one short `AGENTS.md`.
    Keep only:
@@ -62,7 +63,8 @@ Ask for confirmation before writing files.
 - Prefer focused behavioral proof over coverage targets or test-count goals.
 - Mock only system boundaries.
 - Refactor only when green: simplify touched code without changing behavior.
-- Prefer stdlib and existing deps.
+- Ask before adding dependencies; prefer stdlib, existing deps, or small local code.
+- Before proposing a dependency, check maintenance, license, docs, security, and transitive deps.
 - Keep diffs small.
 - Proactively simplify touched code; prefer explicit over clever.
 - Ask before risky or destructive changes.
