@@ -1,6 +1,6 @@
 ---
 name: init-or-refactor-agents-md
-description: Create or compress project agent instructions into one short AGENTS.md with pragmatic behavior-first testing guidance.
+description: Create or compress project agent instructions into one short AGENTS.md with pragmatic repro-first testing guidance.
 ---
 
 # Init Or Refactor AGENTS.md
@@ -18,7 +18,7 @@ Goal: produce one short, high-signal `AGENTS.md` that agents will actually follo
 
 2. Show conflicts.
    - If instructions disagree, show both and ask which one wins.
-   - Behavior-changing work should use TDD by default. Flag instructions that encourage implementation-detail tests, vanity coverage targets, or tests without clear behavioral value.
+   - Bug fixes should use repro-first testing when practical: capture the confirmed failure with a failing behavior test, fix it, then keep the test as regression coverage. Flag instructions that encourage implementation-detail tests, speculative tests for planned behavior, vanity coverage targets, or tests not tied to a confirmed failure.
    - Flag instructions that allow adding dependencies without user approval.
    - Flag instructions that require preserving local patterns when they are unsound, accidental, or undocumented.
    - Flag instructions that discourage necessary rewrites solely because they are larger.
@@ -27,7 +27,7 @@ Goal: produce one short, high-signal `AGENTS.md` that agents will actually follo
    Keep only:
    - one-line project description
    - non-obvious commands
-   - hard rules, including behavior-first testing
+   - hard rules, including repro-first bug testing
    - simplification discipline, quality bar, and rewrite guidance
    - dependency policy
    - critical safety or approval rules
@@ -60,13 +60,14 @@ Ask for confirmation before writing files.
 
 ## Rules
 
-- Use TDD for behavior changes: failing behavior test -> minimal fix -> refactor.
-- Do not add tests for their own sake; skip docs-only, formatting-only, and mechanical changes unless risk justifies them.
+- For confirmed bugs, capture the failure with a failing behavior-level repro test when practical, then fix it and keep the test as a regression test.
+- Do not write tests for planned behavior, predicted risk, implementation details, coverage targets, or test-count goals.
+- For non-bug changes, use existing checks and focused manual verification unless the user explicitly asks for tests.
 - Work in vertical slices: one behavior at a time.
-- Test through public interfaces; don’t test private internals.
-- Prefer focused behavioral proof over coverage targets or test-count goals.
+- Test only observable behavior through public interfaces; never private internals.
+- Prefer a focused bug repro over broad assertions or fixture-heavy tests.
 - Mock only system boundaries.
-- Refactor only when green: simplify touched code without changing behavior.
+- Refactor only after the fix is verified: simplify touched code without changing behavior.
 - Ask before adding dependencies; prefer stdlib, existing deps, or small local code.
 - Before proposing a dependency, check maintenance, license, docs, security, and transitive deps.
 - Keep diffs small.
