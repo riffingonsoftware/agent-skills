@@ -23,21 +23,46 @@ Goal: produce one short, high-signal `AGENTS.md` that agents will actually follo
    - Flag instructions that require preserving local patterns when they are unsound, accidental, or undocumented.
    - Flag instructions that discourage necessary rewrites solely because they are larger.
 
-3. Draft one short `AGENTS.md`.
+3. Ask about commit and PR discipline before drafting.
+   - Summarize any existing branch, commit, PR, review, release, or deploy rules found in the repo.
+   - Ask the user to choose one workflow:
+     - Direct default branch: work directly on `main` / `trunk`; commit and push early and often in logical chunks.
+     - Branch and PR: create a focused branch, commit and push early and often in logical chunks, and open or update a PR for review.
+     - Other: ask the user to describe the repo's workflow in one paragraph and preserve that direction faithfully.
+   - If the repo already has a clear convention, recommend the matching option.
+   - For Direct default branch or Branch and PR, include explicit commit-and-push discipline in the draft.
+   - For Other, include only the workflow the user describes; do not invent branch or PR rules.
+
+4. Offer Matt Pocock skill setup before drafting.
+   - Explain that this optional setup configures `## Agent skills` and `docs/agents/` for Matt Pocock engineering skills.
+   - Ask only whether the user wants to run `setup-matt-pocock-skills` for this repo.
+   - If the user declines, skip this setup.
+   - If the user elects to run it, use this fixed decision packet:
+     - issue tracker: Local markdown under `.scratch/<feature>/`
+     - triage labels: canonical defaults from `setup-matt-pocock-skills` at invocation time
+     - domain docs: Single-context with root `CONTEXT.md` and root `docs/adr/`
+   - If elected and `setup-matt-pocock-skills` is available, call it with the decision packet and ask it to treat the packet as the user's preselected answers.
+   - Do not ask the user to choose GitHub, multi-context docs, or alternate labels; ask only if repo evidence makes one of the preselected answers impossible to apply.
+   - Keep `setup-matt-pocock-skills` responsible for its own `## Agent skills` block and `docs/agents/*`; do not copy its templates, docs, or setup instructions into this skill.
+   - If `setup-matt-pocock-skills` is unavailable, say so and continue with only the `AGENTS.md` draft.
+
+5. Draft one short `AGENTS.md`.
    Keep only:
    - one-line project description
    - non-obvious commands
+   - commit and PR discipline chosen by the user
    - hard rules, including repro-first bug testing
    - simplification discipline, quality bar, and rewrite guidance
    - dependency policy
    - critical safety or approval rules
 
-4. Delete fluff.
+6. Delete fluff.
    Remove vague, duplicate, or obvious advice.
 
-5. Write terse rules.
+7. Write terse rules.
    - Prefer bullets over prose.
    - Prefer rules over explanations.
+   - State commit and PR workflow only when the user chose one or the repo already has a clear rule.
    - State testing expectations briefly and operationally.
    - State dependency approval requirements explicitly.
    - State when to challenge local patterns and consider rewrites.
@@ -57,6 +82,15 @@ Ask for confirmation before writing files.
 - Build: `...`
 - Test: `...`
 - Lint: `...`
+
+## Git Workflow
+
+- Use the standard branch and PR flow.
+- Create a focused branch for each logical change.
+- Commit and push early and often in logical chunks.
+- Keep each commit scoped to one coherent behavior, policy, or cleanup.
+- Open a draft PR once the first useful slice is pushed; keep it updated as work continues.
+- Do not force-push or rewrite shared history unless explicitly asked.
 
 ## Rules
 
@@ -85,5 +119,7 @@ Present:
 
 1. Sources gathered
 2. Conflicts found
-3. Proposed `AGENTS.md`
-4. Items removed
+3. Commit and PR workflow choice
+4. Matt Pocock skill setup choice
+5. Proposed `AGENTS.md`
+6. Items removed
