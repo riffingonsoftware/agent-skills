@@ -18,7 +18,7 @@ Goal: produce one short, high-signal `AGENTS.md` that agents will actually follo
 
 2. Show conflicts.
    - If instructions disagree, show both and ask which one wins.
-   - Bug fixes should use repro-first testing when practical: capture the confirmed failure with a failing behavior test, fix it, then keep the test as regression coverage. Flag instructions that encourage implementation-detail tests, speculative tests for planned behavior, vanity coverage targets, or tests not tied to a confirmed failure.
+   - Bug fixes should use repro-first testing when practical: capture the confirmed failure with a failing behavior test, fix it, then keep the test as regression coverage. For agreed user-visible behavior, prefer acceptance-first verification: define acceptance criteria first and, when the repo already has a suitable harness, add or update one focused acceptance-level test through a public interface before or alongside implementation. Flag instructions that encourage unit-test-first TDD, implementation-detail tests, speculative behavior tests, new BDD/Gherkin/Cucumber tooling, vanity coverage targets, or tests not tied to confirmed failure or agreed acceptance behavior.
    - Flag instructions that allow adding dependencies without user approval.
    - Flag instructions that require preserving local patterns when they are unsound, accidental, or undocumented.
    - Flag instructions that discourage necessary rewrites solely because they are larger.
@@ -51,7 +51,7 @@ Goal: produce one short, high-signal `AGENTS.md` that agents will actually follo
    - one-line project description
    - non-obvious commands
    - commit and PR discipline chosen by the user
-   - hard rules, including repro-first bug testing
+   - hard rules, including repro-first bug testing and acceptance-first verification for agreed user-visible behavior
    - simplification discipline, quality bar, and rewrite guidance
    - dependency policy
    - critical safety or approval rules
@@ -95,8 +95,10 @@ Ask for confirmation before writing files.
 ## Rules
 
 - For confirmed bugs, capture the failure with a failing behavior-level repro test when practical, then fix it and keep the test as a regression test.
-- Do not write tests for planned behavior, predicted risk, implementation details, coverage targets, or test-count goals.
-- For non-bug changes, use existing checks and focused manual verification unless the user explicitly asks for tests.
+- For agreed user-visible behavior, define acceptance criteria first. When the project already has a suitable harness, add or update one focused acceptance-level test through a public interface before or alongside implementation.
+- This is acceptance-first verification, not unit-test-first TDD: do not write implementation-detail tests, speculative tests, vanity coverage tests, or tests for behavior the user has not agreed to.
+- Use BDD-style Given/When/Then phrasing only when it clarifies the acceptance scenario; do not add BDD/Gherkin/Cucumber tooling unless explicitly asked.
+- For non-bug changes without clear acceptance behavior, use existing checks and focused manual verification unless the user explicitly asks for tests.
 - Work in vertical slices: one behavior at a time.
 - Test only observable behavior through public interfaces; never private internals.
 - Prefer a focused bug repro over broad assertions or fixture-heavy tests.
