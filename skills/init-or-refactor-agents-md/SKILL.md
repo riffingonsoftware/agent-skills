@@ -23,7 +23,25 @@ Goal: produce one short, high-signal `AGENTS.md` that agents will actually follo
    - Flag instructions that require preserving local patterns when they are unsound, accidental, or undocumented.
    - Flag instructions that discourage necessary rewrites solely because they are larger.
 
-3. Ask about commit and PR discipline before drafting.
+3. Prune before drafting.
+
+   Before adding an instruction to `AGENTS.md`, use the first rung that applies:
+
+   1. Delete obvious, vague, duplicated, or generic advice.
+   2. Collapse repeated rules into one sharper rule.
+   3. Keep tool-specific wrapper noise out of the canonical file.
+   4. Keep repo-specific, safety-critical, or repeatedly violated rules.
+   5. Make it one bullet if one bullet works.
+   6. Only then add a new section.
+
+   Track removed material with short tags:
+   - `delete:` obvious, vague, duplicated, or generic advice
+   - `yagni:` future-process ceremony
+   - `tool-noise:` tool-specific wrapper noise
+   - `test-theater:` speculative, private, or vanity tests
+   - `structure:` rules that preserve bad structure
+
+4. Ask about commit and PR discipline before drafting.
    - Summarize any existing branch, commit, PR, review, release, or deploy rules found in the repo.
    - Ask the user to choose one workflow:
      - Direct default branch: work directly on `main` / `trunk`; commit and push early and often in logical chunks.
@@ -33,7 +51,7 @@ Goal: produce one short, high-signal `AGENTS.md` that agents will actually follo
    - For Direct default branch or Branch and PR, include explicit commit-and-push discipline in the draft.
    - For Other, include only the workflow the user describes; do not invent branch or PR rules.
 
-4. Offer Matt Pocock skill setup before drafting.
+5. Offer Matt Pocock skill setup before drafting.
    - Explain that this optional setup configures `## Agent skills` and `docs/agents/` for Matt Pocock engineering skills.
    - Ask only whether the user wants to run `setup-matt-pocock-skills` for this repo.
    - If the user declines, skip this setup.
@@ -46,20 +64,20 @@ Goal: produce one short, high-signal `AGENTS.md` that agents will actually follo
    - Keep `setup-matt-pocock-skills` responsible for its own `## Agent skills` block and `docs/agents/*`; do not copy its templates, docs, or setup instructions into this skill.
    - If `setup-matt-pocock-skills` is unavailable, say so and continue with only the `AGENTS.md` draft.
 
-5. Draft one short `AGENTS.md`.
+6. Draft one short `AGENTS.md`.
    Keep only:
    - one-line project description
    - non-obvious commands
    - commit and PR discipline chosen by the user
    - hard rules, including repro-first bug testing and acceptance-first verification for agreed user-visible behavior
-   - simplification discipline, quality bar, and rewrite guidance
+   - implementation ladder, quality bar, and rewrite guidance
    - dependency policy
    - critical safety or approval rules
 
-6. Delete fluff.
+7. Delete fluff.
    Remove vague, duplicate, or obvious advice.
 
-7. Write terse rules.
+8. Write terse rules.
    - Prefer bullets over prose.
    - Prefer rules over explanations.
    - State commit and PR workflow only when the user chose one or the repo already has a clear rule.
@@ -91,6 +109,21 @@ Ask for confirmation before writing files.
 - Keep each commit scoped to one coherent behavior, policy, or cleanup.
 - Open a draft PR once the first useful slice is pushed; keep it updated as work continues.
 - Do not force-push or rewrite shared history unless explicitly asked.
+
+## Implementation Ladder
+
+Before adding code, use the first rung that satisfies the requirement:
+
+1. Delete it, skip it, or make it unnecessary.
+2. Use existing repo code, config, tooling, or workflow.
+3. Use the standard library or native platform feature.
+4. Use an already-installed dependency.
+5. Write the smallest clear local code.
+6. Only then add a new abstraction, file, service, config surface, or dependency.
+
+Stop once a rung works. Prefer deletion, boring code, and fewer files.
+
+Do not simplify away security, validation at trust boundaries, data-loss protection, accessibility, observability, or repo-specific safety rules. If bad structure is the problem, rewrite it in reviewable slices instead of preserving it.
 
 ## Rules
 
@@ -124,4 +157,4 @@ Present:
 3. Commit and PR workflow choice
 4. Matt Pocock skill setup choice
 5. Proposed `AGENTS.md`
-6. Items removed
+6. Items removed, grouped by prune tag
