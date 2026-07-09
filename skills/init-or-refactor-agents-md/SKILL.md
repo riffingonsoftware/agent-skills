@@ -51,20 +51,7 @@ Goal: produce one short, high-signal `AGENTS.md` that agents will actually follo
    - For Direct default branch or Branch and PR, include explicit commit-and-push discipline in the draft.
    - For Other, include only the workflow the user describes; do not invent branch or PR rules.
 
-5. Offer Matt Pocock skill setup before drafting.
-   - Explain that this optional setup configures `## Agent skills` and `docs/agents/` for Matt Pocock engineering skills.
-   - Ask only whether the user wants to run `setup-matt-pocock-skills` for this repo.
-   - If the user declines, skip this setup.
-   - If the user elects to run it, use this fixed decision packet:
-     - issue tracker: Local markdown under `.scratch/<feature>/`
-     - triage labels: canonical defaults from `setup-matt-pocock-skills` at invocation time
-     - domain docs: Single-context with root `CONTEXT.md` and root `docs/adr/`
-   - If elected and `setup-matt-pocock-skills` is available, call it with the decision packet and ask it to treat the packet as the user's preselected answers.
-   - Do not ask the user to choose GitHub, multi-context docs, or alternate labels; ask only if repo evidence makes one of the preselected answers impossible to apply.
-   - Keep `setup-matt-pocock-skills` responsible for its own `## Agent skills` block and `docs/agents/*`; do not copy its templates, docs, or setup instructions into this skill.
-   - If `setup-matt-pocock-skills` is unavailable, say so and continue with only the `AGENTS.md` draft.
-
-6. Draft one short `AGENTS.md`.
+5. Draft one short `AGENTS.md`.
    Keep only:
    - one-line project description
    - non-obvious commands
@@ -74,10 +61,7 @@ Goal: produce one short, high-signal `AGENTS.md` that agents will actually follo
    - dependency policy
    - critical safety or approval rules
 
-7. Delete fluff.
-   Remove vague, duplicate, or obvious advice.
-
-8. Write terse rules.
+6. Write terse rules.
    - Prefer bullets over prose.
    - Prefer rules over explanations.
    - State commit and PR workflow only when the user chose one or the repo already has a clear rule.
@@ -155,6 +139,5 @@ Present:
 1. Sources gathered
 2. Conflicts found
 3. Commit and PR workflow choice
-4. Matt Pocock skill setup choice
-5. Proposed `AGENTS.md`
-6. Items removed, grouped by prune tag
+4. Proposed `AGENTS.md`
+5. Items removed, grouped by prune tag
