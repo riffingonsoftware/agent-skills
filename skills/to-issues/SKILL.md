@@ -6,29 +6,23 @@ disable-model-invocation: true
 
 # To Issues
 
-Goal: issues an implementing agent can pick up later with no extra context. Create no other planning artifacts.
+Create self-contained issues an agent can implement without other context; create no other planning artifacts. Unless directed otherwise, create them under `.issues/`, commit, and push them.
 
 ## Tracker
 
-Issues live in the repo, committed and pushed:
-
-- One feature per directory: `.issues/<feature-slug>/`
-- One issue per file: `.issues/<feature-slug>/NN-<slug>.md`, numbered from `01`
-- First line of each file: `Status: backlog`, `Status: claimed`, or `Status: ready`
-- An issue is blocked while any file listed under its `## Blocked by` still exists; a deleted blocker is a finished blocker
-- Done is a deletion, not a status: delete the issue file in the commit that completes the work; git history is the archive
-
-Publish here unless the user directs otherwise.
+- Use one `.issues/<feature-slug>/` directory per feature and one `NN-<slug>.md` file per issue, numbered from `01`.
+- The first line is `Status: backlog`, `Status: claimed`, or `Status: ready`.
+- An issue remains blocked while any path under `## Blocked by` exists; deletion marks that blocker complete.
+- Complete work by deleting its issue file in the completing commit; git history is the archive.
 
 ## Process
 
-1. Work from the conversation context. If the user passes an issue reference, read it first.
-2. Explore the codebase if you have not already. Look for prefactoring that would make the change easy: make the change easy, then make the easy change.
-3. Draft tracer-bullet slices. Each issue cuts through all layers end-to-end (schema, API, UI, tests), is verifiable on its own, and uses the project's domain language. Prefactoring comes first. No horizontal layer-by-layer issues.
-   - Exception — wide mechanical refactors that can't land green in one slice: sequence as expand–contract. Expand (add the new form beside the old), migrate call sites in batches blocked by the expand, contract (delete the old form) blocked by every batch.
-4. Resolve only the ambiguity that matters. Ask one question at a time, with a recommended answer, when the answer changes product semantics, destructive or one-way behavior, data/security/rollback posture, whether an existing surface lives or dies, or acceptance behavior that can't be inferred. Issue boundaries, ordering, naming, and implementation approach are the implementing agent's to decide — don't ask.
-5. Present the issue set (title, purpose, blockers, acceptance behavior) before publishing, unless told to skip review.
-6. Publish approved issues as `Status: ready`, commit them, and push. Add dependencies only for real blockers, not tidy sequencing. Do not close, delete, or modify parent issues.
+1. Use the conversation context and read any referenced issue first.
+2. Explore the repo as needed and identify prefactoring that simplifies the change. Draft independently verifiable tracer bullets in its domain language; each spans all applicable layers end to end. Put prefactoring slices first and never split work horizontally by layer.
+   - For a mechanical refactor too wide to land green in one slice, use expand–contract: add the new form beside the old, migrate call sites in batches blocked by the expand, then remove the old form in a contract issue blocked by every batch.
+3. Ask one question at a time, with a recommended answer, only when it changes product semantics, destructive or one-way behavior, data/security/rollback posture, whether an existing surface stays or goes, or acceptance behavior you cannot infer. Do not ask the user about issue boundaries, order, naming, or implementation approach.
+4. Unless told to skip review, present each issue's title, purpose, blockers, and acceptance behavior before publishing.
+5. Publish approved issues as `Status: ready`, then commit and push them. Add dependencies only for real blockers, not tidy ordering. Do not close, delete, or modify parent issues.
 
 ## Issue template
 
@@ -39,11 +33,11 @@ Status: ready
 
 ## What to build
 
-End-to-end behavior of this slice, not layer-by-layer implementation. No file paths or code snippets unless they are stable, necessary constraints.
+<Describe this slice end to end. Include file paths or code only as stable, necessary constraints.>
 
 ## Acceptance criteria
 
-- [ ] <observable behavior>
+- [ ] <Observable behavior>
 
 ## Blocked by
 
@@ -51,7 +45,7 @@ None.
 
 ## When done
 
-Commit the work, then delete this file — git history is the archive.
+Commit the work, then delete this file; git history is the archive.
 ```
 
-Add `## Decisions` only when human-owned decisions were resolved during the ambiguity pass. Under `## Blocked by`, list blocker issue files by path.
+Add `## Decisions` only for human-owned decisions resolved while drafting. Under `## Blocked by`, list blocker issue files by path.

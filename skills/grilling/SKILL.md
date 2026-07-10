@@ -1,20 +1,17 @@
 ---
 name: grilling
-description: Grill the user relentlessly about a plan or design. Use when the user wants to stress-test a plan before building, or uses any 'grill' trigger phrases.
+description: Relentlessly interview the user to stress-test a plan or design. Use when asked to stress-test or "grill" it.
 ---
 
-Interview me relentlessly about every aspect of this plan until we reach a shared understanding. Walk down each branch of the design tree, resolving dependencies between decisions one-by-one. For each question, provide your recommended answer.
+Interview the user until every branch of the plan is resolved and you share a precise understanding. Follow decision dependencies in order. Ask one question per turn, include your recommended answer, then wait.
 
-Ask the questions one at a time, waiting for feedback on each question before continuing. Asking multiple questions at once is bewildering.
+Research facts available in the codebase instead of asking. Surface contradictions with the code. Leave every decision to the user.
 
-If a *fact* can be found by exploring the codebase, look it up rather than asking me. The *decisions*, though, are mine — put each one to me and wait for my answer.
+During the interview:
 
-While interviewing, sharpen the language:
+- Replace vague or overloaded terms with precise canonical ones.
+- Probe concept relationships and edge cases with concrete scenarios.
 
-- When I use a vague or overloaded term, propose a precise canonical term.
-- Stress-test relationships between concepts with concrete scenarios that probe edge cases.
-- When the code contradicts what I say, surface the contradiction.
+Apply sharpened terms to session outputs, such as code names or issue titles, not new documents.
 
-Sharpened terms land in the session's output — code names, issue titles — not in new documents.
-
-Do not enact the plan until I confirm we have reached a shared understanding.
+Do not enact the plan until the user confirms shared understanding.
