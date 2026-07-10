@@ -1,143 +1,34 @@
 ---
 name: init-or-refactor-agents-md
-description: Create or compress project agent instructions into one short AGENTS.md with pragmatic repro-first testing guidance.
+description: Create or compress repo-local agent instructions into a short canonical AGENTS.md with a CLAUDE.md pointer.
 ---
 
-# Init Or Refactor AGENTS.md
+# Init or Refactor AGENTS.md
 
-Goal: produce one short, high-signal `AGENTS.md` that agents will actually follow. Prefer one canonical file.
+Produce one short, high-signal canonical `AGENTS.md`.
 
 ## Workflow
 
-1. Read existing instruction files:
-   - `AGENTS.md`
-   - `CLAUDE.md`
-   - `CODEX.md`
-   - `.cursorrules`
-   - similar repo-local agent instruction files
+1. Read `AGENTS.md`, `CLAUDE.md`, `CODEX.md`, `.cursorrules`, and similar repo-local instruction files.
+2. Present conflicting instructions with their sources and ask which wins. Flag conflicts with the target policies below, especially speculative or implementation-detail tests, unapproved dependencies, blind preservation of local patterns, and rejection of justified rewrites.
+3. Prune before drafting, in order: delete vague, obvious, generic, or duplicate advice; collapse repeats; remove tool-wrapper noise and future ceremony; remove speculative, private, or vanity tests and rules that preserve bad structure; retain repo-specific, safety-critical, or repeatedly violated rules. Prefer one bullet to a new section. Group removals as `delete`, `yagni`, `tool-noise`, `test-theater`, or `structure`.
+4. Summarize existing branch, commit, PR, review, release, and deploy rules. Ask the user to confirm direct-default, branch/PR, or another workflow; recommend a clear repo convention. For direct-default or branch/PR, require scoped logical commits and early, frequent pushes. For another workflow, preserve only what the user supplies.
+5. Draft `AGENTS.md` with only a one-line project description, non-obvious commands, the confirmed Git workflow, the target policies, and critical safety or approval rules. Use terse bullets and no linked detail docs.
+6. Present the sources, conflicts, Git choice, proposed `AGENTS.md`, and tagged removals. Get confirmation before writing.
+7. Write `AGENTS.md`. Ensure `CLAUDE.md` exists and its entire contents are exactly:
 
-2. Show conflicts.
-   - If instructions disagree, show both and ask which one wins.
-   - Bug fixes should use repro-first testing when practical: capture the confirmed failure with a failing behavior test, fix it, then keep the test as regression coverage. For agreed user-visible behavior, prefer acceptance-first verification: define acceptance criteria first and, when the repo already has a suitable harness, add or update one focused acceptance-level test through a public interface before or alongside implementation. Flag instructions that encourage unit-test-first TDD, implementation-detail tests, speculative behavior tests, new BDD/Gherkin/Cucumber tooling, vanity coverage targets, or tests not tied to confirmed failure or agreed acceptance behavior.
-   - Flag instructions that allow adding dependencies without user approval.
-   - Flag instructions that require preserving local patterns when they are unsound, accidental, or undocumented.
-   - Flag instructions that discourage necessary rewrites solely because they are larger.
+   ```md
+   @AGENTS.md
+   ```
 
-3. Prune before drafting.
+   Create it if absent. Create no other tool-specific file unless explicitly asked.
 
-   Before adding an instruction to `AGENTS.md`, use the first rung that applies:
+## Target policies
 
-   1. Delete obvious, vague, duplicated, or generic advice.
-   2. Collapse repeated rules into one sharper rule.
-   3. Keep tool-specific wrapper noise out of the canonical file.
-   4. Keep repo-specific, safety-critical, or repeatedly violated rules.
-   5. Make it one bullet if one bullet works.
-   6. Only then add a new section.
-
-   Track removed material with short tags:
-   - `delete:` obvious, vague, duplicated, or generic advice
-   - `yagni:` future-process ceremony
-   - `tool-noise:` tool-specific wrapper noise
-   - `test-theater:` speculative, private, or vanity tests
-   - `structure:` rules that preserve bad structure
-
-4. Ask about commit and PR discipline before drafting.
-   - Summarize any existing branch, commit, PR, review, release, or deploy rules found in the repo.
-   - Ask the user to choose one workflow:
-     - Direct default branch: work directly on `main` / `trunk`; commit and push early and often in logical chunks.
-     - Branch and PR: create a focused branch, commit and push early and often in logical chunks, and open or update a PR for review.
-     - Other: ask the user to describe the repo's workflow in one paragraph and preserve that direction faithfully.
-   - If the repo already has a clear convention, recommend the matching option.
-   - For Direct default branch or Branch and PR, include explicit commit-and-push discipline in the draft.
-   - For Other, include only the workflow the user describes; do not invent branch or PR rules.
-
-5. Draft one short `AGENTS.md`.
-   Keep only:
-   - one-line project description
-   - non-obvious commands
-   - commit and PR discipline chosen by the user
-   - hard rules, including repro-first bug testing and acceptance-first verification for agreed user-visible behavior
-   - implementation ladder, quality bar, and rewrite guidance
-   - dependency policy
-   - critical safety or approval rules
-
-6. Write terse rules.
-   - Prefer bullets over prose.
-   - Prefer rules over explanations.
-   - State commit and PR workflow only when the user chose one or the repo already has a clear rule.
-   - State testing expectations briefly and operationally.
-   - State dependency approval requirements explicitly.
-   - State when to challenge local patterns and consider rewrites.
-   - Do not create linked docs unless explicitly asked.
-   - Do not create tool-specific files unless needed.
-   - If `CLAUDE.md` is needed, its entire contents must be exactly `@AGENTS.md`.
-
-Ask for confirmation before writing files.
-
-## Example `AGENTS.md`
-
-```md
-# Project Name
-
-## Commands
-
-- Build: `...`
-- Test: `...`
-- Lint: `...`
-
-## Git Workflow
-
-- Use the standard branch and PR flow.
-- Create a focused branch for each logical change.
-- Commit and push early and often in logical chunks.
-- Keep each commit scoped to one coherent behavior, policy, or cleanup.
-- Open a draft PR once the first useful slice is pushed; keep it updated as work continues.
-- Do not force-push or rewrite shared history unless explicitly asked.
-
-## Implementation Ladder
-
-Before adding code, use the first rung that satisfies the requirement:
-
-1. Delete it, skip it, or make it unnecessary.
-2. Use existing repo code, config, tooling, or workflow.
-3. Use the standard library or native platform feature.
-4. Use an already-installed dependency.
-5. Write the smallest clear local code.
-6. Only then add a new abstraction, file, service, config surface, or dependency.
-
-Stop once a rung works. Prefer deletion, boring code, and fewer files.
-
-Do not simplify away security, validation at trust boundaries, data-loss protection, accessibility, observability, or repo-specific safety rules. If bad structure is the problem, rewrite it in reviewable slices instead of preserving it.
-
-## Rules
-
-- For confirmed bugs, capture the failure with a failing behavior-level repro test when practical, then fix it and keep the test as a regression test.
-- For agreed user-visible behavior, define acceptance criteria first. When the project already has a suitable harness, add or update one focused acceptance-level test through a public interface before or alongside implementation.
-- This is acceptance-first verification, not unit-test-first TDD: do not write implementation-detail tests, speculative tests, vanity coverage tests, or tests for behavior the user has not agreed to.
-- Use BDD-style Given/When/Then phrasing only when it clarifies the acceptance scenario; do not add BDD/Gherkin/Cucumber tooling unless explicitly asked.
-- For non-bug changes without clear acceptance behavior, use existing checks and focused manual verification unless the user explicitly asks for tests.
-- Work in vertical slices: one behavior at a time.
-- Test only observable behavior through public interfaces; never private internals.
-- Prefer a focused bug repro over broad assertions or fixture-heavy tests.
-- Mock only system boundaries.
-- Refactor only after the fix is verified: simplify touched code without changing behavior.
-- Ask before adding dependencies; prefer stdlib, existing deps, or small local code.
-- Before proposing a dependency, check maintenance, license, docs, security, and transitive deps.
-- Keep diffs small.
-- Proactively simplify touched code; prefer explicit over clever.
-- Follow existing patterns only when they are sound and intentional; proactively challenge them when they conflict with best practices or project goals.
-- Prefer the correct fix over the smallest patch; propose or perform rewrites when local structure is the problem.
-- Do not avoid necessary redesign because it is larger; explain the tradeoff and proceed in reviewable slices.
-- Ask before risky or destructive changes.
-- Run relevant checks before finishing.
-```
-
-## Output
-
-Present:
-
-1. Sources gathered
-2. Conflicts found
-3. Commit and PR workflow choice
-4. Proposed `AGENTS.md`
-5. Items removed, grouped by prune tag
+- For a confirmed bug, when practical capture a focused failing behavior-level repro through a public interface, fix it, and retain the regression test. For agreed user-visible behavior, define acceptance criteria and, when a suitable harness exists, add or update one focused public-interface acceptance test before or with implementation.
+- Otherwise use existing checks and focused manual verification. Avoid unit-test-first TDD, private, speculative, or unagreed tests, broad fixture-heavy assertions, and coverage-driven tests; mock only system boundaries. Use Given/When/Then phrasing only when it clarifies a scenario, and do not add BDD/Gherkin/Cucumber tooling unless explicitly asked. Refactor after the fix is verified.
+- Before adding code, use the first rung that works: remove the need; use existing repo code, config, tooling, or workflow; use standard-library or native features; use an installed dependency; write small local code; only then add an abstraction, file, service, config surface, or dependency. Stop there; prefer fewer files and explicit, boring code.
+- Never simplify away security, trust-boundary validation, data-loss protection, accessibility, observability, or repo-specific safeguards.
+- Ask before adding a dependency; prefer the standard library, installed dependencies, or small local code. Evaluate maintenance, license, docs, security, and transitive dependencies before proposing one.
+- Work in vertical slices and keep changes reviewable. Simplify touched code. Follow local patterns only when sound and intentional. Prefer the correct fix over the smallest patch; rewrite bad structure in reviewable slices.
+- Ask before risky or destructive changes, and run relevant checks before finishing.
