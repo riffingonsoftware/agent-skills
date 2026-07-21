@@ -9,7 +9,6 @@ Portable agent skills and tool adapters.
 
 ## Current Skills
 
-- `grilling` interviews the user relentlessly about a plan or design, one question at a time, until shared understanding is reached.
 - `handoff` compacts the current conversation into a handoff document a fresh agent can pick up.
 - `init-or-refactor-agents-md` initializes or compresses agent instruction files into one short `AGENTS.md` that coding agents are likely to follow. It emphasizes repro-first, behavior-only tests for confirmed bugs and avoids speculative test creation.
 - `ship` scans local changes for sensitive data, splits them into logical commits, and pushes.
@@ -17,7 +16,7 @@ Portable agent skills and tool adapters.
 
 ## Attribution
 
-`grilling`, `handoff`, and `to-issues` are pared-down forks of skills from Matt Pocock's MIT-licensed [mattpocock/skills](https://github.com/mattpocock/skills) ([license](https://github.com/mattpocock/skills/blob/main/LICENSE)).
+`handoff` and `to-issues` are pared-down forks of skills from Matt Pocock's MIT-licensed [mattpocock/skills](https://github.com/mattpocock/skills) ([license](https://github.com/mattpocock/skills/blob/main/LICENSE)).
 
 ## Tool Requirements
 
