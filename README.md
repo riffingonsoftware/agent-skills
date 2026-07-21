@@ -12,11 +12,11 @@ Portable agent skills and tool adapters.
 - `handoff` compacts the current conversation into a handoff document a fresh agent can pick up.
 - `init-or-refactor-agents-md` initializes or compresses agent instruction files into one short `AGENTS.md` that coding agents are likely to follow. It emphasizes repro-first, behavior-only tests for confirmed bugs and avoids speculative test creation.
 - `ship` scans local changes for sensitive data, splits them into logical commits, and pushes.
-- `to-issues` breaks a plan, spec, or conversation into AFK-ready issues in the repo's committed `.issues/` kanban. Done issues are deleted; git history is the archive.
+- `to-tickets` turns a plan, spec, or conversation into AFK-ready tickets in the repo's committed `.tickets/` kanban. Done tickets are deleted; git history is the archive.
 
 ## Attribution
 
-`handoff` and `to-issues` are pared-down forks of skills from Matt Pocock's MIT-licensed [mattpocock/skills](https://github.com/mattpocock/skills) ([license](https://github.com/mattpocock/skills/blob/main/LICENSE)).
+`handoff` and `to-tickets` are pared-down forks of skills from Matt Pocock's MIT-licensed [mattpocock/skills](https://github.com/mattpocock/skills) ([license](https://github.com/mattpocock/skills/blob/main/LICENSE)).
 
 ## Tool Requirements
 
