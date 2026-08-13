@@ -1,7 +1,7 @@
 ---
 name: handoff
-description: Compact the current conversation into a self-contained prompt for another agent session to pick up.
-argument-hint: "What will the next session be used for?"
+description: Create a focused handoff prompt shaped by why the user wants to continue in a new agent session.
+argument-hint: "Why start a new session, and what should it accomplish?"
 disable-model-invocation: true
 ---
 
