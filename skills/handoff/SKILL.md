@@ -1,6 +1,8 @@
 ---
 name: handoff
-description: Create a self-contained prompt for continuing work in a new agent session, saved in a temporary directory.
+description: Compact the current conversation into a self-contained prompt for another agent session to pick up.
+argument-hint: "What will the next session be used for?"
+disable-model-invocation: true
 ---
 
 # Handoff
