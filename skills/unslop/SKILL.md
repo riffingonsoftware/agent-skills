@@ -1,6 +1,6 @@
 ---
 name: unslop
-description: Cut AI tells from writing. Must apply to text intended for readers other than the operator.
+description: Cut AI tells from writing. Must apply to text intended to outlive the current session.
 ---
 
 # Unslop
