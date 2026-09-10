@@ -1,12 +1,12 @@
 ---
 name: open-pr
-description: Deslop and review a change, unslop its prose, and open a ready pull request.
+description: Deslop and review a change, unslop its prose, open a pull request, and babysit it to merge readiness.
 disable-model-invocation: true
 ---
 
 # Open a PR
 
-Prepare a narrow, landable pull request, open it ready for review, and return its URL. Opening a PR does not start babysitting it.
+Prepare a narrow, landable pull request, open it ready for review, and babysit it to merge readiness. Return its URL and final status.
 
 ## Worktree
 
@@ -42,6 +42,6 @@ After these sections, attach screenshots or videos when they prove a claim. Do n
 
 **Readiness.** Open every PR ready, never as a draft. Cloud-agent PR tools default to draft, so set `draft: false` on every PR creation call. If a PR still opens as a draft, run the host's ready command, such as `gh pr ready <number>`. Run `gh pr view <number>` before you refer to PR status.
 
-**Babysit.** Opening a PR does not start a babysit. Post the URL and keep building. Finish the phase or stack first. Run a separate babysit pass only when the user asks for one after the whole stack exists. A babysit for each new PR stalls the build and spends checks on commits that later waves restart. Push back when feedback drifts from intent.
+**Babysit.** After opening each PR, invoke `babysit-pr` for that PR and carry it through to readiness or a reported blocker. Do this for every PR, including each PR in a stack. Opening the PR alone does not complete this workflow.
 
-A subagent that opens a PR runs `/deslop` and `/no-comments`. It returns the URL and does not babysit. Return to the parent.
+A subagent that opens a PR runs `deslop` and `no-comments`, then also babysits it. Relay human feedback and ambiguous findings to the parent for the user. Return the PR URL and final status.
