@@ -15,7 +15,7 @@ Produce one short, high-signal canonical `AGENTS.md`.
 4. Summarize existing branch, commit, PR, review, release, and deploy rules. Ask the user to confirm direct-default (work on `main` or `trunk`), branch/PR (use a focused branch and open or update its PR), or another workflow; recommend a clear repo convention. For direct-default or branch/PR, require scoped logical commits and early, frequent pushes; for branch/PR, open or update the PR after the first useful slice. Never rewrite shared history without approval. For another workflow, preserve only what the user supplies.
 5. Draft `AGENTS.md` with only a one-line project description, non-obvious commands, the confirmed Git workflow, the target policies, and critical safety or approval rules. Use terse bullets and no linked detail docs unless explicitly asked.
 6. Present the sources, conflicts, Git choice, proposed `AGENTS.md`, and tagged removals. Get confirmation before writing.
-7. Write `AGENTS.md`, then remove `CLAUDE.md` after consolidating its retained instructions. Create no tool-specific instruction files unless explicitly asked.
+7. Write `AGENTS.md`, then delete the other contributing instruction files after consolidating their retained instructions. Create no tool-specific instruction files unless explicitly asked.
 
 ## Target policies
 
