@@ -5,6 +5,7 @@ Portable agent skills and tool adapters.
 ## Layout
 
 - `skills/` contains canonical open-standard skills. These are the source of truth.
+- `skills/.devin-plugin/plugin.json` lets Devin install `skills/` as a plugin without the repo's `AGENTS.md`.
 
 ## Current Skills
 
