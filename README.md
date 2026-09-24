@@ -16,7 +16,7 @@ Portable agent skills and tool adapters.
 - `open-pr` cleans and organizes a change, opens a pull request, and babysits it to merge readiness.
 - `prune-tests` deletes tests that do not uniquely protect a durable contract, confirmed regression, or critical invariant.
 - `ship` scans local changes for sensitive data, splits them into logical commits, and pushes.
-- `unslop` removes AI tells from prose and adds human voice.
+- `unslop` removes AI tells from prose.
 
 ## Tool Requirements
 

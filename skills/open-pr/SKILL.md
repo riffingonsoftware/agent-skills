@@ -38,10 +38,10 @@ Use these sections in order. Drop a section when it is empty.
 
 After these sections, attach screenshots or videos when they prove a claim. Do not add `## Summary` or `## Test plan` boilerplate. A commit body does not restate its subject. Apply `unslop` to the completed description.
 
-**Size and stacks.** Prefer five narrow PRs to one large PR. Use the repository's configured stacking tool, and keep the ordered stack visible to reviewers. Branch from the base only for independent work. Rebase on the latest base before substantial stack work.
+Prefer five narrow PRs to one large PR. Use the repository's configured stacking tool, and keep the ordered stack visible to reviewers. Branch from the base only for independent work. Rebase on the latest base before substantial stack work.
 
-**Readiness.** Open every PR ready, never as a draft. Cloud-agent PR tools default to draft, so set `draft: false` on every PR creation call. If a PR still opens as a draft, run the host's ready command, such as `gh pr ready <number>`. Run `gh pr view <number>` before you refer to PR status.
+Open every PR ready, never as a draft. Cloud-agent PR tools default to draft, so set `draft: false` on every PR creation call. If a PR still opens as a draft, run the host's ready command, such as `gh pr ready <number>`. Run `gh pr view <number>` before you refer to PR status.
 
-**Babysit.** After opening each PR, invoke `babysit-pr` for that PR and carry it through to readiness or a reported blocker. Do this for every PR, including each PR in a stack. Opening the PR alone does not complete this workflow.
+After opening each PR, invoke `babysit-pr` for that PR and carry it through to readiness or a reported blocker. Do this for every PR, including each PR in a stack. Opening the PR alone does not complete this workflow.
 
 A subagent that opens a PR runs `deslop` and `no-comments`, then also babysits it. Relay human feedback and ambiguous findings to the parent for the user. Return the PR URL and final status.
