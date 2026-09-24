@@ -1,5 +1,14 @@
 {
   "name": "agent-skills",
   "description": "Portable agent skills",
-  "skills": "."
+  "skills": [
+    "babysit-pr",
+    "deslop",
+    "init-or-refactor-agents-md",
+    "no-comments",
+    "open-pr",
+    "prune-tests",
+    "ship",
+    "unslop"
+  ]
 }
