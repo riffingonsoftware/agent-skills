@@ -1,8 +1,8 @@
-# Agent Skills
+# Agent skills
 
 Portable, tool-agnostic agent skills. `skills/*/SKILL.md` is the canonical source of truth.
 
-## Git Workflow
+## Git workflow
 
 - Work directly on `trunk`; commit and push early and often in logical chunks.
 - Keep each commit scoped to one coherent change.

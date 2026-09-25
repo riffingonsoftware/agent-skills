@@ -3,7 +3,7 @@ name: prune-tests
 description: Delete tests that do not uniquely protect a durable contract, confirmed regression, or critical invariant.
 ---
 
-# Prune Tests
+# Prune tests
 
 Reduce test-suite cost without weakening meaningful protection.
 

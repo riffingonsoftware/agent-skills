@@ -1,4 +1,4 @@
-# Agent Skills
+# Agent skills
 
 Portable agent skills and tool adapters.
 

@@ -3,7 +3,7 @@ name: init-or-refactor-agents-md
 description: Create or compress repo-local agent instructions into a short canonical AGENTS.md.
 ---
 
-# Init or Refactor AGENTS.md
+# Init or refactor AGENTS.md
 
 Produce one short, high-signal canonical `AGENTS.md`.
 

@@ -33,7 +33,7 @@ Use these sections in order. Drop a section when it is empty.
 - `## Why`. State the intent and why this approach fits.
 - `## Scope`. State facts from the diff. Name real symbols and paths. Name both sides of a rename or retarget. State what is in and out when the boundary matters.
 - `## Tradeoffs`. State real choices only. Skip this section when there are none.
-- `## Blast Radius`. State who and what the change touches. Explain why the change is safe or risky. If main is red without the fix, name the continuing cost.
+- `## Blast radius`. State who and what the change touches. Explain why the change is safe or risky. If main is red without the fix, name the continuing cost.
 - `## Verification`. State how you ran each check and its rigor. Name the real path, such as control-cli, control-ui, or the targeted tests. State the outcome of each check, not only the command name.
 
 After these sections, attach screenshots or videos when they prove a claim. Do not add `## Summary` or `## Test plan` boilerplate. A commit body does not restate its subject. Apply `unslop` to the completed description.
