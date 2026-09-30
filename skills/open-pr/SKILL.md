@@ -1,7 +1,6 @@
 ---
 name: open-pr
 description: Deslop and review a change, unslop its prose, open a pull request, and babysit it to merge readiness.
-disable-model-invocation: true
 ---
 
 # Open a PR
