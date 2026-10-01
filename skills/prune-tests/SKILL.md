@@ -17,6 +17,10 @@ Keep a test only when it uniquely protects:
 
 A seam may be an API, CLI, module interface, protocol, workflow, or artifact boundary.
 
+## Scope
+
+Default to the whole suite. When a caller scopes the run to a diff, consider only tests the diff adds or changes and tests that cover code it changes or removes. Limit the baseline and checks to those tests.
+
 ## Workflow
 
 1. Establish a green baseline.
