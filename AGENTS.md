@@ -4,14 +4,12 @@ Portable, tool-agnostic agent skills. `skills/*/SKILL.md` is the canonical sourc
 
 ## Git workflow
 
-- Work directly on `trunk`; commit and push early and often in logical chunks.
-- Keep each commit scoped to one coherent change.
+- Work directly on `trunk`; commit and push early and often, one coherent change per commit.
 
 ## Rules
 
-- Keep all behavioral logic in `skills/*/SKILL.md`.
 - Skills are prose programs: keep them short, imperative, and high-signal; prune generic
   advice on every edit.
-- Update the README's skill list and `skills/.devin-plugin/plugin.json` when adding, renaming, or removing a skill.
+- Update `skills/.devin-plugin/plugin.json` when adding, renaming, or removing a skill.
 - Preserve attribution for forked skills (see README).
 - Markdown-only repo: no build, tests, or dependencies. Ask before adding any tooling.
