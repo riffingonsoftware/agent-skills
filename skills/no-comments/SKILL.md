@@ -41,4 +41,5 @@ You then follow these steps based on the reviewer's report:
 2. Delete accepted comments. Fix trivial flags directly by deleting dead paths, dropping unused parameters, or using the real API.
 3. For every remaining flag, implement the smallest root-cause fix in scope and remove the named workaround. Do not widen scope. If the cause is out of scope, make only the smallest safe in-scope fix and report the remainder open.
 4. For comments claiming a constraint, keep proven external constraints. For our code, offer the cheapest in-scope type, runtime check, test, or CI lint and wait for approval. If approved, encode the constraint and delete the comment. Otherwise leave it and report the unenforced constraint.
-5. Report the deletion count, retained comments with proof, reruns, fixes, encodings, unenforced constraints, and other open work.
+5. Apply `unslop` to every retained comment. Keep its meaning and any required syntax, such as doc-comment conventions.
+6. Report the deletion count, retained comments with proof, reruns, fixes, encodings, unenforced constraints, and other open work.
