@@ -1,6 +1,6 @@
 ---
 name: deslop
-description: Remove AI-generated code slop from a branch diff
+description: Remove AI-generated code slop from a diff
 ---
 
 # Remove AI code slop
