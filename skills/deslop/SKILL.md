@@ -9,7 +9,6 @@ Remove AI-generated slop introduced in the change. Use the caller's diff, or oth
 
 ## Focus areas
 
-- Extra comments that are unnecessary
 - Defensive checks, try/catch blocks, or fallback defaults that are abnormal for trusted code paths or hide failures
 - Casts to `any` (or similar language-specific overly broad type) used only to bypass type issues, and subtler dodges that do the same (`as unknown as T`, suppression comments)
 - Deeply nested code that should be simplified with early returns
