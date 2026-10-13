@@ -9,6 +9,7 @@
     "open-pr",
     "prune-tests",
     "ship",
-    "unslop"
+    "unslop",
+    "write-for-agents"
   ]
 }
