@@ -8,8 +8,8 @@ Portable, tool-agnostic agent skills. `skills/*/SKILL.md` is the canonical sourc
 
 ## Rules
 
-- Skills are prose programs: keep them short, imperative, and high-signal; prune generic
-  advice on every edit.
+- Keep skills short and imperative. Apply `write-for-agents` whenever you edit a skill,
+  `AGENTS.md`, or `CLAUDE.md`.
 - Update `skills/.devin-plugin/plugin.json` when adding, renaming, or removing a skill.
 - Preserve attribution for forked skills (see README).
 - Markdown-only repo: no build, tests, or dependencies. Ask before adding any tooling.
