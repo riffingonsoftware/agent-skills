@@ -9,7 +9,7 @@ Prepare a narrow, landable pull request, open it ready for review, and babysit i
 
 ## Worktree
 
-Read the repository instructions and determine the intended base, branch policy, and PR tooling. Prefer an isolated worktree from the base branch. Use the current worktree only when it contains the intended branch and no unrelated work. Never patch out, reset, discard, or overwrite user work without approval; stop and ask when the worktree is dirty or snarled.
+Read the repository instructions and determine the intended base, branch policy, PR tooling, and commit and PR conventions. Where the repository sets a commit convention or PR template, follow it instead of the ones below. Use the current worktree when its changes are the PR, creating the intended branch there if needed. Otherwise prefer an isolated worktree from the base branch. Never patch out, reset, discard, or overwrite user work without approval; stop and ask when the worktree mixes the PR's changes with unrelated work or is snarled.
 
 Inspect the status, staged and unstaged diffs, every untracked file, branch ancestry, commit range, and remote state. Verify that every change belongs to the requested PR. Stop on ambiguous scope, merge conflicts, sensitive data, missing permission, or an unsafe history rewrite.
 
@@ -21,7 +21,7 @@ Run `deslop` on the exact intended diff before each commit. Run `no-comments` on
 
 Write commit subjects using Conventional Commits. Name the changed area as the scope. Keep the subject short and imperative, name a real symbol when useful, and omit the trailing period. A commit body explains facts not present in its subject; it never restates the subject. Apply `unslop` to every subject and body without changing the Conventional Commit syntax.
 
-Use `ship` for each commit and push. Ask before setting an upstream. Recheck status between commits and never include unrelated work.
+Use `ship` for each commit and push, naming the changes that belong in that commit.
 
 ## Pull request
 
@@ -31,11 +31,11 @@ Use these sections in order. Drop a section when it is empty.
 
 - `## Why`. State the intent and why this approach fits.
 - `## Scope`. State facts from the diff. Name real symbols and paths. Name both sides of a rename or retarget. State what is in and out when the boundary matters.
-- `## Tradeoffs`. State real choices only. Skip this section when there are none.
+- `## Tradeoffs`. State real choices only.
 - `## Blast radius`. State who and what the change touches. Explain why the change is safe or risky. If main is red without the fix, name the continuing cost.
-- `## Verification`. State how you ran each check and its rigor. Name the real path, such as control-cli, control-ui, or the targeted tests. State the outcome of each check, not only the command name.
+- `## Verification`. State how you ran each check and its rigor. Name the real path, such as the CLI command, the UI flow, or the targeted tests. State the outcome of each check, not only the command name.
 
-After these sections, attach screenshots or videos when they prove a claim. Do not add `## Summary` or `## Test plan` boilerplate. A commit body does not restate its subject. Apply `unslop` to the completed description.
+After these sections, attach screenshots or videos when they prove a claim. Do not add `## Summary` or `## Test plan` boilerplate. Apply `unslop` to the completed description.
 
 Prefer five narrow PRs to one large PR. Use the repository's configured stacking tool, and keep the ordered stack visible to reviewers. Branch from the base only for independent work. Rebase on the latest base before substantial stack work.
 
