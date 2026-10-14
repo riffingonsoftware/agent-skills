@@ -22,8 +22,9 @@ Portable agent skills and tool adapters.
 
 ## Credits
 
-Five skills are adapted from MIT-licensed upstreams. Each keeps the upstream copyright and permission notice in its own `LICENSE` file, so the notice travels with the skill.
+Six skills are adapted from MIT-licensed upstreams. Each keeps the upstream copyright and permission notice in its own `LICENSE` file, so the notice travels with the skill.
 
+- `agent-retro` is inspired by and includes portions of Matt Pocock's [`retro` skill](https://github.com/mattpocock/skills/tree/49dd158d1076134a641b33efb035946536778336/skills/engineering/retro), © 2026 Matt Pocock.
 - `deslop` comes from the [`deslop` skill](https://github.com/cursor/plugins/tree/99559f2f52047978602ef365589275831e76af07/cursor-team-kit/skills/deslop) in Cursor's cursor-team-kit, © 2026 Cursor.
 - `no-comments` comes from pstack's [`no-comments` skill](https://github.com/cursor/plugins/tree/99559f2f52047978602ef365589275831e76af07/pstack/skills/no-comments) and [Comment Sicko agent](https://github.com/cursor/plugins/blob/99559f2f52047978602ef365589275831e76af07/pstack/agents/comment-sicko.md), © 2026 Lauren Tan.
 - `open-pr` is inspired by and includes portions of pstack's [opening-a-pr playbook](https://github.com/cursor/plugins/blob/99559f2f52047978602ef365589275831e76af07/pstack/skills/poteto-mode/playbooks/opening-a-pr.md), © 2026 Lauren Tan.
