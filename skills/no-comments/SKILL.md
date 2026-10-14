@@ -9,7 +9,7 @@ Comments lie. Narration, banners, commented-out corpses, and workaround sermons 
 
 ## Scope
 
-Use the caller's files or diff. Otherwise use the current diff against the base branch, including the working tree.
+Use the caller's files or diff. Otherwise use the current diff against the base branch, including staged, unstaged, and untracked files.
 
 ## Review
 

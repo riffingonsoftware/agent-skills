@@ -5,7 +5,7 @@ description: Remove AI-generated code slop from a diff
 
 # Remove AI code slop
 
-Remove AI-generated slop introduced in the change. Use the caller's diff, or otherwise the diff against the base branch, including the working tree. Finish when you have removed each focus-area instance in the change or kept it because a guardrail requires it.
+Remove AI-generated slop introduced in the change. Use the caller's diff, or otherwise the diff against the base branch, including staged, unstaged, and untracked files. Finish when you have removed each focus-area instance in the change or kept it because a guardrail requires it.
 
 ## Focus areas
 
