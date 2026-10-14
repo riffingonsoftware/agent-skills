@@ -27,12 +27,11 @@ Use `ship` for each commit and push, naming the changes that belong in that comm
 
 Also use Conventional Commit format for the PR title. Keep articles, use one plain word for each action, and avoid `-ing` when a direct verb works. Apply `unslop` to the title without changing that syntax.
 
-Use these sections in order. Drop a section when it is empty.
+Open with a paragraph, without a heading, that states the problem, with a concrete failing case when one exists, and what the change does about it. Name the key symbols. Add a sentence on what is out of scope or on both sides of a rename when that matters. Don't walk through the diff.
 
-- `## Why`. State the intent and why this approach fits.
-- `## Scope`. State facts from the diff. Name real symbols and paths. Name both sides of a rename or retarget. State what is in and out when the boundary matters.
-- `## Tradeoffs`. State real choices only.
-- `## Blast radius`. State who and what the change touches. Explain why the change is safe or risky. If main is red without the fix, name the continuing cost.
+Then add these sections in order:
+
+- `## Tradeoffs`. State real choices, rejected alternatives, known limits, and what could break. Say what stays the same when a reviewer might wonder. If the base branch fails without the fix, name the continuing cost. Drop this section when there is nothing to say.
 - `## Verification`. State how you ran each check and its rigor. Name the real path, such as the CLI command, the UI flow, or the targeted tests. State the outcome of each check, not only the command name.
 
 After these sections, attach screenshots or videos when they prove a claim. Do not add `## Summary` or `## Test plan` boilerplate. Apply `unslop` to the completed description.
