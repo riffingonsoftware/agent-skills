@@ -10,8 +10,8 @@ Edit text to remove AI patterns.
 ## Process
 
 1. Scan for the patterns below.
-2. Rewrite. Preserve meaning, required syntax, and intended tone. Never invent facts, numbers, quotes, or anecdotes. When a detail is missing, keep the claim the source supports or ask for the detail.
-3. When asked to review rather than edit, quote each tell with its rule number and a fix. Don't rewrite, score, or guess who wrote the text.
+2. When asked to review rather than edit, quote each tell with its pattern number and a fix, then stop. Don't rewrite, score, or guess who wrote the text.
+3. Otherwise, rewrite. Preserve meaning, required syntax, and intended tone. Never invent facts, numbers, quotes, or anecdotes. When a detail is missing, keep the claim the source supports or ask for the detail. Finish when every tell is fixed or its missing detail is requested.
 
 ## Patterns to detect and fix
 
@@ -66,5 +66,5 @@ Edit text to remove AI patterns.
 29. Active voice. Prefer it. Catch "is/are/was/were + past participle" and name the actor: "queries are validated" becomes "the compiler validates queries", "the file is parsed by the loader" becomes "the loader parses the file". Passive is fine only when the actor is unknown or doesn't matter.
 30. Cut adverbs, or use a stronger verb. "runs quickly" becomes "is fast" or the number. "significantly improves" becomes the measured delta. An adverb propping up a weak verb means the verb is wrong.
 31. Prefer the plain word. "utilize" becomes "use", "leverage" becomes "use", "facilitate" becomes "help", "numerous" becomes "many", "in the event that" becomes "if". The fancier synonym is rarely clearer.
-32. Mannered prose. Metaphor or flourish where a literal phrase exists: aphorisms ("wire it or delete it"), personified code ("the plan holds it"), figurative verbs ("rides along", "stands on"), stock framing phrases. "A dial worth turning" becomes "a parameter worth varying". Data, files and types never act: "the values file names none" becomes "not set in the values file", and "Secrets holds every credential the file names" becomes "Secrets has each credential listed in the file". Watch for names, holds, carries and keeps used this way. Say what you mean. Rule 26 covers the metaphor nouns.
+32. Mannered prose. Metaphor or flourish where a literal phrase exists: aphorisms ("wire it or delete it"), personified code ("the plan holds it"), figurative verbs ("rides along", "stands on"), stock framing phrases. "A dial worth turning" becomes "a parameter worth varying". Data, files and types never act: "the values file names none" becomes "not set in the values file", and "Secrets holds every credential the file names" becomes "Secrets has each credential listed in the file". Watch for names, holds, carries and keeps used this way. Say what you mean. Pattern 26 covers the metaphor nouns.
 33. Over-compression. Dropped articles, verbless fragments, symbol-speak, and abbreviations that make the reader decode instead of read. "Parser rejects bad date → exit 2, no write" becomes "The parser rejects a bad date, exits with code 2, and writes nothing." Write whole sentences with their articles and verbs, and spell out arrows and abbreviations.
