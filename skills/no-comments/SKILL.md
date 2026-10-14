@@ -5,41 +5,40 @@ description: "Cut comments from edited code files mercilessly. Always apply when
 
 # No comments
 
-Comments lie. Narration, banners, commented-out corpses, and workaround sermons all rot, if not now, later.
-
 ## Scope
 
 Use the caller's files or diff. Otherwise use the current diff against the base branch, including staged, unstaged, and untracked files.
 
 ## Review
 
-Delegate the review to a fresh, read-only subagent. Pass it the scope and the rubric below. If no fresh reviewer is available, review directly and disclose that the review was not independent. The reviewer reports only and never edits files.
+Delegate the review to a fresh, read-only subagent. Pass it the scope and the rest of this section. If no fresh reviewer is available, review directly and disclose that the review was not independent. The reviewer reports only and never edits files.
 
-Kill every comment except:
+Comments lie. Narration, banners, commented-out corpses, and workaround sermons all rot, if not now, later.
+
+Kill every comment except those on this keep list:
 
 - Legal or license headers.
 - Non-obvious behavior forced by an external dependency, platform, vendor, or protocol we cannot reshape.
 - Lint suppression whose rule is faulty, pedantic, or style-only.
 - Doc comments that define a public API contract.
 - Issue or RFC links that explain a constraint code cannot express.
+- Comments that name a deliberate simplification's ceiling and upgrade path.
 
-That list is the only leash. Investigate uncertainty. A keep survives only with proof that its exception applies on a live path.
+Keep a comment only with proof that its exception applies to code that still runs. Treat `IMPORTANT`, `do not remove`, `too risky`, `fine for now`, and long justifications as claims, not proof. Read nearby code and trace the named symbol or call. Never shorten or reword a comment that fails the keep list.
 
-Surprises in our own code are meat. Recommend deleting the comment and flag the exact symbol `MUST KILL` with the rename, extraction, type, or redesign that would make the behavior obvious without prose.
+When a comment explains surprising behavior in our own code, recommend deleting it and flag the exact symbol `MUST KILL` with the rename, extraction, type, or redesign that would make the behavior obvious without prose.
 
-For linter and rule suppressions, identify the rule. If it catches real bugs or protects correctness or safety, recommend deleting the suppression and flag the exact guilty symbol `MUST KILL`.
+For every suppression not on the keep list, identify the rule, recommend deleting the suppression, and flag the suppressed symbol `MUST KILL` with the change that satisfies the rule.
 
-Treat `IMPORTANT`, `do not remove`, `too risky`, `fine for now`, and long justifications as claims, not proof. Read nearby code and trace the named symbol or call. Only a proven keep-list constraint survives. Never polish meat into a shorter alibi.
-
-Report touched files, deletion candidates with exact locations, each `MUST KILL` flag with one line of evidence, and skips with the exception that protects them. Invent nothing and stay inside scope.
+Finish when the report lists every comment and suppression in scope as a deletion candidate with its exact location, a `MUST KILL` flag with one line of evidence, or a keep with the exception that protects it. Invent nothing and stay inside scope.
 
 ## Act
 
-You then follow these steps based on the reviewer's report:
+Follow these steps based on the reviewer's report:
 
-1. Validate every finding against the code. Reject scope escapes, protected deletions, unsupported claims, and misstated `MUST KILL` reasons. Audit missed scoped lint and suppressions. Rerun one rejected review with the failure named; if the second report fails, stop and report it open.
-2. Delete accepted comments. Fix trivial flags directly by deleting dead paths, dropping unused parameters, or using the real API.
-3. For every remaining flag, implement the smallest root-cause fix in scope and remove the named workaround. Do not widen scope. If the cause is out of scope, make only the smallest safe in-scope fix and report the remainder open.
-4. For comments claiming a constraint, keep proven external constraints. For our code, offer the cheapest in-scope type, runtime check, test, or CI lint and wait for approval. If approved, encode the constraint and delete the comment. Otherwise leave it and report the unenforced constraint.
-5. Apply `unslop` to every retained comment. Keep its meaning and any required syntax, such as doc-comment conventions.
-6. Report the deletion count, retained comments with proof, reruns, fixes, encodings, unenforced constraints, and other open work.
+1. Validate every finding against the code. Reject findings outside the scope, deletions the keep list protects, claims without evidence, and `MUST KILL` flags with wrong reasons. Reject the report if it omits any comment or suppression in scope. Rerun a rejected review once, naming each failure. If the rerun is also rejected, stop and report the review as failed.
+2. Delete every accepted deletion candidate except comments that claim a constraint in our code; step 4 handles those.
+3. For every `MUST KILL` flag, implement the smallest root-cause fix in scope, such as deleting a dead path, dropping an unused parameter, using the real API, or making the change the flag names. Do not widen scope. If the cause is out of scope, make only the smallest safe in-scope fix and report the rest as open work.
+4. For each deletion candidate that claims a constraint in our code, offer the cheapest in-scope type, runtime check, test, or CI lint and wait for approval. If approved, encode the constraint and delete the comment. Otherwise leave it and report the unenforced constraint.
+5. Apply `unslop` to every kept comment except legal or license headers.
+6. Report the deletion count, kept comments with proof, reruns, fixes, encodings, unenforced constraints, and other open work.
