@@ -12,7 +12,7 @@ Use the requested PR, or the current branch's PR if none was specified. Ask if t
 1. Check mergeability, CI, and all review bots. Fetch full findings from inline threads, review bodies, and issue comments, including pagination and thread resolution state.
 2. Validate each finding against the code and PR intent. Fix valid issues with minimal changes. Record why you skip incorrect findings. Track handled findings so later polls do not repeat work.
 3. Fix CI failures and merge conflicts within the PR's scope. Never weaken checks to get green. Escalate infrastructure failures or fixes that require unrelated changes.
-4. Run relevant checks, then use `ship` to commit and push scoped fixes. Ask before amending published commits or force-pushing.
+4. Use `ship` to commit and push scoped fixes. Ask before amending published commits or force-pushing.
 5. Wait for CI and bot reviews on the latest pushed commit, then repeat. A new comment, silence, or an older green review does not prove completion.
 
 Keep watching while checks or reviews are pending. Respect rate limits and back off between polls. Report stalled reviews, access failures, or other blockers without claiming success.

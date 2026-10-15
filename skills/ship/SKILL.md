@@ -11,7 +11,7 @@ Ship the changes a caller names, or all local changes when no caller names any.
 2. Scan the changes and unpushed commits for secrets, credentials, tokens, API or private keys, `.env` contents, personal data, or anything else that should not be committed. If a change may contain such data, stop without committing. Name the file and the kind of data without quoting the value, then ask whether to remove, redact, ignore, or intentionally keep it.
 3. If the changes add, edit, or make tests obsolete, run `prune-tests` scoped to them.
 4. Group the changes by purpose. Stage and commit one independently reviewable group of files or hunks at a time, with a message that states its purpose, and recheck status between commits. Finish when none of the changes remain uncommitted.
-5. Run obvious, reasonably quick tests or checks before pushing. If one fails, stop and report it without pushing. Report each check you skip.
+5. Run the cheapest checks that show the changes work before pushing. If one fails, stop and report it without pushing. Report each check you skip.
 6. Push the current branch to its existing upstream. Ask before setting one.
 
 Ask before destructive cleanup, reset, checkout, or deletion. End by reporting the commits, sensitive-data scan result, pruned tests, checks, and push result.
