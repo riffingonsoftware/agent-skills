@@ -5,7 +5,7 @@ description: Review a PR, branch, commit, or uncommitted change. Use when asked 
 
 # Review
 
-Review adversarially. Try to break the change and its chosen approach, taking the goal as given.
+Review adversarially. Try to break the change and its chosen approach, ask whether a smaller change would do, and take the goal as given. Look hardest at compatibility, data loss, observability gaps, partial failure, races, security, stale state, unsafe retries or rollback, and violations of documented conventions.
 
 If you wrote or changed the target in this session, hand this skill and the target to a fresh subagent and relay its report.
 
@@ -34,6 +34,6 @@ Number the findings, most severe first. For each:
 - Tag its priority, `[P0]` for a universal blocker or `[P1]` to `[P3]` from urgent to nice to have, and whether the change introduced it or it was already there.
 - Give every line it rests on, including both sides when one place accepts what another rejects. For a PR, link each line: one in the diff to `https://github.com/<owner>/<repo>/pull/<number>/files#diff-<SHA-256 of path>R<line>` (`L<line>` for a removed line), any other to `https://github.com/<owner>/<repo>/blob/<head SHA>/<path>#L<line>`. Otherwise give `path:line`.
 - Describe the failure as a concrete scenario in plain words: the input or sequence, then what goes wrong. Then show what the fix looks like.
-- Ground it in code you read or a command you ran, and label inference as inference.
+- Quote the code or command output it rests on, and label inference as inference.
 
 End with open questions, what you couldn't verify, and a verdict, ship or not yet, based only on findings the change introduced. If nothing holds up, say so.
