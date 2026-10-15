@@ -9,9 +9,9 @@ Write instructions that make an agent follow the same process on every run.
 
 ## Process
 
-1. Read the document, every pointer to it, and the files and commands it describes.
+1. Read the document, every pointer to it, every document that calls it, and the files and commands it describes.
 2. Draft or revise it with the rules below.
-3. Check every sentence against every rule, then apply `unslop`. Finish when every sentence passes both.
+3. Check every sentence against every rule, then apply `unslop`. Finish when every sentence passes both and every caller's steps still hold.
 
 ## Pointers
 
