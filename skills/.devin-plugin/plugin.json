@@ -9,6 +9,7 @@
     "no-comments",
     "open-pr",
     "prune-tests",
+    "review",
     "ship",
     "unslop",
     "write-for-agents"
