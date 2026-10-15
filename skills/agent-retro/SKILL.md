@@ -10,10 +10,10 @@ Find changes to the agent's environment that would have prevented the trouble in
 ## Steps
 
 1. Collect the session logs from every local agent harness, such as Claude Code and Codex, for the requested timeframe. Without a timeframe, use the current session.
-2. Search the logs for trouble before reading them in full: user corrections, interrupts, denied or failed tool calls, reverted edits, repeated searches, and repeated review findings. Read the excerpts around each.
-3. Group the trouble by cause. Across several sessions, keep a cause only when it appears in at least two of them. Tag each cause as global, specific to one repo, or specific to one tech stack.
+2. Search the logs for trouble before reading them in full: user corrections, interrupts, denied or failed tool calls, approval prompts, reverted edits, repeated searches, and repeated review findings. Read the excerpts around each.
+3. Group the trouble by cause. Across several sessions, keep a cause only when it appears in at least two of them. Count a subagent or review thread as part of the session that started it. Tag each cause as global, specific to one repo, or specific to one tech stack.
 4. Propose a fix for each cause from the categories below, in the place its tag points to. Prefer a check or a review rule to an always-loaded instruction, because the implementing agent carries the most context. Apply `write-for-agents` to any instruction you propose.
-5. Return the candidates ranked by how often each recurred and what it cost. Give each its category, tag, evidence (session, date, and a short quote with secrets redacted), and proposed fix. Finish when every cause from step 3 has a candidate.
+5. Return the candidates ranked by how often each recurred and what it cost. Give each its category, tag, evidence (session, date, and a short quote with secrets redacted), and proposed fix. Mark a cause whose fix already exists as fixed, and say how to confirm the fix took effect. Finish when every cause from step 3 has a candidate.
 
 ## Categories
 
