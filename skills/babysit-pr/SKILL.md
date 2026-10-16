@@ -15,7 +15,7 @@ Use the requested PR, or the current branch's PR if none was specified. Ask if t
 4. Use `ship` to commit and push scoped fixes. Ask before amending published commits or force-pushing.
 5. Wait for CI and bot reviews on the latest pushed commit, then repeat. A new comment, silence, or an older green review does not prove completion.
 
-Keep watching while checks or reviews are pending. Respect rate limits and back off between polls. Report stalled reviews, access failures, or other blockers without claiming success.
+Keep watching while checks or reviews are pending. If you run in the main session and the harness provides a PR watcher, such as T3 Code's `watch_pull_request`, start it and end your turn. Otherwise poll, back off between polls, and respect rate limits. Report stalled reviews, access failures, or other blockers without claiming success.
 
 ## Ambiguity and human feedback
 
