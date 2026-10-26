@@ -15,6 +15,8 @@ Keep a test only when it uniquely protects:
 - A shipped bug that could recur.
 - A critical security, permissions, compatibility, concurrency, migration, protocol, or data-loss invariant, with one test per invariant, not one per branch that enforces it.
 
+Also keep every test the repository's instructions require.
+
 A contract sits at an API, CLI, protocol, workflow, or artifact boundary. A bug shipped if it reached the default branch or users. Tests that cover private mechanics, duplicate stronger coverage, enumerate equivalent cases, preserve dead behavior, test framework or type guarantees, restate the code as assertions, or depend on structure rather than behavior do not qualify. Coverage percentage is not a reason to keep a test.
 
 ## Scope
