@@ -42,4 +42,5 @@ A pointer is a reference to other material in always-loaded context, such as a s
 - Keep each rule in one place, and point to it from elsewhere.
 - Leave out what the agent can find in one lookup, such as scripts, config, the directory layout, or `--help` output. Write down the conventions, reasons, and gotchas it cannot find.
 - Delete a sentence that does not change behavior compared with the model's default. Delete the whole sentence rather than trimming words. Check the history first, and keep a rule added to fix an observed failure until a run without it shows the failure is gone.
+- When you can't tell whether a sentence changes behavior, test it. Run the same task in fresh sessions with and without the sentence, at least three times each, with no hint of the test. Use a task large enough that the sentence applies, then compare what the agent did.
 - Delete lines that are stale or do not bear on the document's task.
