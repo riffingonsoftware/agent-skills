@@ -5,7 +5,9 @@ description: Review a PR, branch, commit, or uncommitted change. Use when asked 
 
 # Review
 
-Review adversarially. Try to break the change and its chosen approach, ask whether a smaller change would do, and take the goal as given. Look hardest at compatibility, data loss, observability gaps, partial failure, races, security, stale state, unsafe retries or rollback, and violations of documented conventions. Flag each test the change adds or edits that fails the Keep bar in `prune-tests`, unless the repository's instructions require it.
+Review adversarially. Try to break the change and its chosen approach, ask whether a smaller change would do, and take the goal as given. Look hardest at compatibility, data loss, observability gaps, partial failure, races, security, stale state, unsafe retries or rollback, and violations of documented conventions.
+
+Only in changes the user or their agents wrote, flag each test the change adds or edits that fails the Keep bar in `prune-tests`, unless the repository's instructions require it. Those are uncommitted changes, commits by the user's git identity, and PRs that the user's `gh` login opened, or for Devin, requested. Never suggest that anyone else delete a test.
 
 If you wrote or changed the target in this session, hand this skill and the target to a fresh subagent and relay its report.
 
