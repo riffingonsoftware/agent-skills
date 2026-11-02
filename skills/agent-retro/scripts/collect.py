@@ -490,7 +490,7 @@ def remove_when(repos):
     for repo in sorted(repos):
         result = subprocess.run(
             ["git", "-C", repo, "log", "--date=short",
-             "--format=%h%x09%ad%x09%s%x09%(trailers:key=Remove-When,valueonly,separator=%x20)"],
+             "--format=%h%x09%ad%x09%s%x09%(trailers:key=Remove-When,valueonly,unfold,separator=%x1f)"],
             capture_output=True, text=True,
         )
         if result.returncode:
@@ -498,8 +498,8 @@ def remove_when(repos):
             continue
         for line in result.stdout.splitlines():
             fields = line.split("\t")
-            if len(fields) == 4 and fields[3].strip():
-                rows.append((repo, *fields))
+            if len(fields) == 4:
+                rows.extend((repo, *fields[:3], value.strip()) for value in fields[3].split("\x1f") if value.strip())
     return rows
 
 
