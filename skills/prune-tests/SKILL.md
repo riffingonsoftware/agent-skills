@@ -1,6 +1,6 @@
 ---
 name: prune-tests
-description: Delete tests that do not uniquely protect a contract, shipped bug, or critical invariant.
+description: Delete tests that do not uniquely protect a contract, shipped bug, or critical invariant. Use when asked whether tests meet the Keep bar.
 ---
 
 # Prune tests
