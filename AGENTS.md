@@ -10,8 +10,9 @@ Portable, tool-agnostic agent skills. `skills/*/SKILL.md` is the canonical sourc
 
 - Keep skills short and imperative. Apply `write-for-agents` whenever you edit a skill,
   `AGENTS.md`, or `CLAUDE.md`.
-- When adding, renaming, or removing a skill, update `skills/.devin-plugin/plugin.json` and the install lists in
-  `~/projects/config`. That repo's bootstrap installs these skills and stops while this checkout has uncommitted
-  changes.
+- When adding, renaming, or removing a skill, update `skills/.devin-plugin/plugin.json` and the skill install lists
+  in the `riffingonsoftware/keycard` and `riffingonsoftware/starfleet` repos. The dotfiles bootstrap stops while this
+  checkout has uncommitted changes.
 - Preserve attribution for forked skills (see README).
-- Markdown-only repo: no build, tests, or dependencies. Ask before adding any tooling.
+- No build, tests, or dependencies. A skill may ship scripts that run on Python 3.9, macOS's system Python, with
+  only the standard library. Ask before adding any other tooling.
