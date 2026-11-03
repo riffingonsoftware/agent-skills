@@ -9,7 +9,7 @@ Reads the session logs of each supported harness that exists on this machine
 and skips the rest. Prints tab-separated sections: harnesses, sessions,
 signals, repeated commands, and Remove-When trailers. Subagent sessions are
 folded into the session that started them; sessions that ran agent-retro are
-listed but their signals are skipped. Exits 2 when a log line can't be parsed.
+listed but their signals are skipped; one-shot sessions (see one_shot) are dropped. Exits 2 when a log line can't be parsed.
 
 Supported: Claude Code (~/.claude/projects), Codex (~/.codex/sessions).
 Repeated-command detection is a heuristic: it groups shell commands by program
@@ -42,7 +42,8 @@ AUTH = re.compile(
     re.I,
 )
 DENIED = re.compile(r"doesn'?t want to proceed|rejected by user|permission denied by|denied by (the )?user|blocked by hook|not approved", re.I)
-REVERT = re.compile(r"\bgit (checkout --|restore\b|revert\b|reset --hard|stash\b)")
+# checkout --, restore and stash also undo the deliberate breaks of a fail-without-the-fix check.
+REVERT = re.compile(r"\bgit (revert\b|reset --hard)")
 BROWSER = re.compile(r"preview_|browser|playwright|chrome|puppeteer", re.I)
 SKIP_USER = (
     "<task-notification", "Context handoff", "<command-", "<local-command", "Caveat:", "This session is being continued",
@@ -80,7 +81,7 @@ def parse_ts(value):
 
 
 def clip(text, n=200):
-    text = re.sub(r"\s+", " ", text or "").strip()
+    text = re.sub(r"[\s\x00-\x1f\x7f]+", " ", text or "").strip()
     return text if len(text) <= n else text[: n - 1] + "…"
 
 
@@ -523,6 +524,12 @@ def local(ts):
     return ts.astimezone().strftime("%Y-%m-%d %H:%M") if ts else ""
 
 
+def one_shot(session):
+    """One prompt, at most one tool call, and no signal but a guessed correction, such as a title generator."""
+    kinds = collections.Counter(k for _, k, _ in session.events)
+    return kinds["user"] <= 1 and kinds["call"] <= 1 and all(k == "correction?" for _, k, _ in signals(session))
+
+
 def run_report(args):
     since = local_midnight(args.since)
     until = local_midnight(args.until, days=1) if args.until else None
@@ -533,6 +540,7 @@ def run_report(args):
     found, sessions = load_all(since)
     mark_briefs(sessions)
     sessions = fold(sessions, codex_index() if "codex" in found else {})
+    sessions = [s for s in sessions if not one_shot(s)]
     for s in sessions:
         s.events = [e for e in s.events if inside(e[0])]
         s.commands = [c for c in s.commands if inside(c[0])]
@@ -549,6 +557,7 @@ def run_report(args):
 
     print("\n## signals (retro sessions skipped)\nsession\ttime\tkind\texcerpt")
     for s in sessions:
+        # Ceiling: this also drops other work done in a retro session. Skipping only the retro's own turns would fix it.
         if s.retro:
             continue
         for ts, kind, text in signals(s):
