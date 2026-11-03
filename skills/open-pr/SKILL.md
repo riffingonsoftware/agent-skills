@@ -40,6 +40,6 @@ Prefer five narrow PRs to one large PR. Use the repository's configured stacking
 
 Open every PR ready, never as a draft. Cloud-agent PR tools default to draft, so set `draft: false` on every PR creation call. If a PR still opens as a draft, run the host's ready command, such as `gh pr ready <number>`. Run `gh pr view <number>` before you refer to PR status.
 
-After opening each PR, invoke `babysit-pr` for that PR and carry it through to readiness or a reported blocker. Do this for every PR, including each PR in a stack. Opening the PR alone does not complete this workflow.
+After opening each PR, invoke `babysit-pr` for that PR and carry it through to readiness or a reported blocker. For a stack, open every PR in it first, then babysit each one: babysitting stalls the build, and a fix to a parent restacks its children. Opening the PR alone does not complete this workflow.
 
-A subagent that opens a PR runs `deslop` and `no-comments`, then also babysits it. Relay human feedback and ambiguous findings to the parent for the user. Return the PR URL and final status.
+A subagent that opens a PR runs `deslop` and `no-comments`, then also babysits it, unless the PR belongs to a stack the parent is still building. Relay human feedback and ambiguous findings to the parent for the user. Return the PR URL and final status.
