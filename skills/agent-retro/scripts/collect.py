@@ -7,7 +7,7 @@ Usage:
 
 Reads the session logs of each supported harness that exists on this machine
 and skips the rest. Prints tab-separated sections: harnesses, sessions,
-signals, repeated commands, and Remove-When trailers. Subagent sessions are
+signals, repeated commands, memories, and Remove-When trailers. Subagent sessions are
 folded into the session that started them; sessions that ran agent-retro are
 listed but their signals are skipped; one-shot sessions (see one_shot) are dropped. Exits 2 when a log line can't be parsed.
 
@@ -30,6 +30,7 @@ import time
 HOME = os.path.expanduser("~")
 CLAUDE = os.path.join(HOME, ".claude", "projects")
 CODEX = os.path.join(HOME, ".codex", "sessions")
+CODEX_MEMORIES = os.path.join(HOME, ".codex", "memories")
 
 CORRECTION = re.compile(
     r"^(no\b|nope|wait\b|hmm|stop\b|actually\b|again\b)|\b(didn'?t|don'?t|doesn'?t|wrong|instead|i said|i asked|"
@@ -495,6 +496,40 @@ def command_keys(command):
         yield key.strip()
 
 
+def description(path):
+    with open(path, encoding="utf-8", errors="replace") as handle:
+        head = handle.read(4096)
+    front = re.match(r"---\n(.*?)\n---\n", head, re.S)
+    match = re.search(r"^description:[ \t]*([^|>\s].*)$", front.group(1), re.M) if front else None
+    return clip(match.group(1).strip("'\"") if match else head, 160)
+
+
+def tilde(path):
+    for home in {HOME, os.path.realpath(HOME)}:
+        if path.startswith(home + os.sep):
+            return "~" + path[len(home):]
+    return path
+
+
+def memories():
+    """Rows of (harness, modified, sessions, path, description); sessions counts the logs of the Claude projects that load a memory."""
+    rows = []
+    # Several project folders can link their memory folder to one shared folder; list its files once.
+    shared = collections.Counter()
+    for folder in glob.glob(os.path.join(CLAUDE, "*", "memory")):
+        shared[os.path.realpath(folder)] += len(glob.glob(os.path.join(os.path.dirname(folder), "*.jsonl")))
+    for folder, sessions in shared.items():
+        rows.extend(("claude-code", p, str(sessions)) for p in glob.glob(os.path.join(folder, "*.md")) if os.path.basename(p) != "MEMORY.md")
+    # Codex generates these from its sessions; the rest of ~/.codex/memories is that pipeline's input.
+    for path in [os.path.join(CODEX_MEMORIES, "memory_summary.md")] + glob.glob(os.path.join(CODEX_MEMORIES, "skills", "*", "SKILL.md")):
+        if os.path.exists(path):
+            rows.append(("codex", path, ""))
+    return sorted(
+        ((h, local(dt.datetime.fromtimestamp(os.path.getmtime(p), dt.timezone.utc)), n, tilde(p), description(p)) for h, p, n in rows),
+        key=lambda row: (row[0], row[3]),
+    )
+
+
 def remove_when(repos):
     rows = []
     for repo in sorted(repos):
@@ -583,6 +618,10 @@ def run_report(args):
     for key, ids in sorted(seen.items(), key=lambda kv: (-len(kv[1]), kv[0])):
         if len(ids) >= 2:
             print(f"{len(ids)}\t{key}\t{', '.join(sorted(i[:8] for _, i in ids)[:5])}")
+
+    print("\n## memories\nharness\tmodified\tsessions\tpath\tdescription")
+    for row in memories():
+        print("\t".join(row))
 
     repos = {r for r in (git_root(s.cwd) for s in sessions) if r}
     repos.update(os.path.abspath(os.path.expanduser(r)) for r in args.repo)
