@@ -41,6 +41,11 @@ AUTH = re.compile(
     r"(token|session|credentials?) (has |have )?expired|expired (token|session|credentials?)|re-?authenticate)\b",
     re.I,
 )
+# Failures a pipe or `;` hid behind exit 0, such as `cmd 2>&1 | tail`; only the shell's, aws's and gh's own wording.
+MASKED = re.compile(
+    r"\b(?:ba|z)?sh: (?:line \d+: )?[\w./+-]+: command not found|(?:zsh|\(eval\)):(?:\d+:)? command not found: \S+|"
+    r"aws: \[ERROR\]: An error occurred \(\w+\)|\(HTTP 40[13]\)"
+)
 DENIED = re.compile(r"doesn'?t want to proceed|rejected by user|permission denied by|denied by (the )?user|blocked by hook|not approved", re.I)
 # checkout --, restore and stash also undo the deliberate breaks of a fail-without-the-fix check.
 REVERT = re.compile(r"\bgit (revert\b|reset --hard)")
@@ -389,6 +394,10 @@ def signals(session):
                 yield ts, "auth", text
             else:
                 yield ts, "tool-error", text
+        elif kind == "result":
+            match = MASKED.search(text)
+            if match:
+                yield ts, "masked-error", text[max(0, match.start() - 60):]
         elif kind == "call":
             name = text.split(" ", 1)[0]
             if BROWSER.search(name):
