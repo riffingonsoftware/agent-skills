@@ -14,5 +14,5 @@ Portable, tool-agnostic agent skills. `skills/*/SKILL.md` is the canonical sourc
   in `riffingonsoftware/dotfiles`, and the Windows install list in `riffingonsoftware/starfleet`. `cz apply` stops while this
   checkout has uncommitted changes.
 - Preserve attribution for forked skills (see README).
-- No build, tests, or dependencies. A skill may ship scripts that run on Python 3.9, macOS's system Python, with
-  only the standard library. Ask before adding any other tooling.
+- No build or tests. Skill scripts use only the standard library, run on Python 3.9 or later (uv may pick macOS's
+  system Python), and run with `uv run --no-project`. Ask before adding any other dependency or tooling.

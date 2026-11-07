@@ -9,7 +9,7 @@ Find changes to the agent's environment that would have prevented the trouble in
 
 ## Steps
 
-1. Run `python3 scripts/collect.py --since <date>` from this skill's directory. Without a timeframe, review the current session instead.
+1. Run `uv run --no-project scripts/collect.py --since <date>` from this skill's directory. Without a timeframe, review the current session instead.
 2. Search the logs for trouble before reading them in full: user corrections, interrupts, denied or failed tool calls, approval and sign-in prompts, browser automation, content the user pasted in, reverted edits, repeated searches, repeated review findings, and commands or inline scripts repeated across sessions. Read the excerpts around each.
 3. Group the trouble by cause. Across several sessions, keep a cause only when it appears in at least two of them. Count a subagent or review thread as part of the session that started it. Tag each cause as global, specific to one repo, or specific to one tech stack.
 4. For each `Remove-When:` trailer the script lists, check its condition and whether the cause its commit names recurred. Propose deleting a fix whose condition holds, that a higher-tier fix now covers, or that misfires. Propose a higher-tier fix for a cause that recurred after its fix.

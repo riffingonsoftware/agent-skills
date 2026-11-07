@@ -20,6 +20,8 @@ Portable agent skills and tool adapters.
 }
 ```
 
+- Skills that ship scripts, such as `agent-retro`, run them with [uv](https://docs.astral.sh/uv/), which downloads Python if none is installed.
+
 ## Credits
 
 Six skills are adapted from MIT-licensed upstreams. Each keeps the upstream copyright and permission notice in its own `LICENSE` file, so the notice travels with the skill.
