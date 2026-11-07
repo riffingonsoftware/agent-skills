@@ -9,7 +9,7 @@ Improve the work one change per round until the scorer says it meets the goal. R
 
 ## Set up
 
-1. Create an evidence folder outside the repo that survives a restart, with one subfolder per round. Keep the log in it as `log.md`. Finish when the log names:
+1. Create a temporary directory for the evidence, with one subfolder per round. Keep the log in it as `log.md`. Finish when the log names:
    - The goal: a score to reach, or a reference to match or beat.
    - The scorer: a command whose output decides the goal, such as an eval, test suite, or benchmark. Use judges only when no command can decide it.
    - The evidence: a fixed set of captures, such as the same screenshots, seeds, and inputs, that every round repeats.
@@ -43,4 +43,4 @@ Stop at the first of:
 2. Stuck: the last two verdicts rank the same top gaps first, and closing them needs something only the user can supply, such as an asset, credentials, or access. Log what the user must supply, then start the fallback work, or stop if there is none.
 3. A deadline, such as a burn-down's stop time. Report the goal as not met.
 
-Report whether the goal was met, the best kept version's commit, the log's round table, the remaining gaps, the evidence folder's path, and every decision for the user to revisit.
+Report whether the goal was met, the best kept version's commit, the log's round table, the remaining gaps, and every decision for the user to revisit.
