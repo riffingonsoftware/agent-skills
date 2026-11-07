@@ -554,7 +554,7 @@ def git_root(path, cache={}):
         if path and os.path.isdir(path):
             result = subprocess.run(["git", "-C", path, "rev-parse", "--show-toplevel"], capture_output=True, text=True)
             if result.returncode == 0:
-                cache[path] = result.stdout.strip()
+                cache[path] = os.path.realpath(result.stdout.strip())
     return cache[path]
 
 
@@ -624,7 +624,7 @@ def run_report(args):
         print("\t".join(row))
 
     repos = {r for r in (git_root(s.cwd) for s in sessions) if r}
-    repos.update(os.path.abspath(os.path.expanduser(r)) for r in args.repo)
+    repos.update(git_root(os.path.expanduser(r)) or os.path.realpath(os.path.expanduser(r)) for r in args.repo)
     print("\n## Remove-When trailers\nrepo\tcommit\tdate\tsubject\tcondition")
     for row in remove_when(repos):
         print("\t".join(row))
