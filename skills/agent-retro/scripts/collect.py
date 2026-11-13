@@ -145,9 +145,11 @@ def load_claude(path):
         session.is_subagent = True
     tool_names = {}
     recognized = 0
+    unrecognized_messages = 0
     for record in read_jsonl(path):
         kind = record.get("type")
         if kind not in ("user", "assistant"):
+            unrecognized_messages += "message" in record
             continue
         recognized += 1
         ts = parse_ts(record.get("timestamp"))
@@ -183,7 +185,9 @@ def load_claude(path):
                     if name == "Bash" and isinstance(data.get("command"), str):
                         session.commands.append((ts, data["command"]))
                     session.add(ts, "call", f"{name} {json.dumps(data, ensure_ascii=False)}")
-    if not recognized and os.path.getsize(path) > 0 and not session.parent:
+    # A session closed before any message holds only metadata records. A format change that also
+    # renames the `message` field would slip past this check.
+    if not recognized and unrecognized_messages and not session.parent:
         errors.append(f"{path}: no user or assistant records; the log format may have changed")
     return session
 
