@@ -7,7 +7,8 @@ Usage:
 
 Reads the session logs of each supported harness that exists on this machine
 and skips the rest. Prints tab-separated sections: harnesses, sessions,
-signals, repeated commands, memories, and Remove-When trailers. Subagent sessions are
+signals, repeated commands, PR review comments, memories, and Remove-When trailers.
+PR review comments need an authenticated gh and are skipped without one. Subagent sessions are
 folded into the session that started them; sessions that ran agent-retro are
 listed but their signals are skipped; one-shot sessions (see one_shot) are dropped. Exits 2 when a log line can't be parsed.
 
@@ -17,12 +18,14 @@ and subcommand, and inline scripts by the paths and hosts they touch.
 """
 import argparse
 import collections
+import concurrent.futures
 import datetime as dt
 import glob
 import json
 import os
 import re
 import shlex
+import shutil
 import subprocess
 import sys
 import time
@@ -552,6 +555,58 @@ def remove_when(repos):
     return rows
 
 
+def gh_json(endpoint, *fields):
+    args = ["gh", "api", "-X", "GET", "--paginate", "--slurp", endpoint] + [f for field in fields for f in ("-f", field)]
+    result = subprocess.run(args, capture_output=True, text=True)
+    if result.returncode:
+        errors.append(f"gh api {endpoint}: {clip(result.stderr)}")
+        return []
+    pages = json.loads(result.stdout)
+    if any(isinstance(page, dict) and page.get("incomplete_results") for page in pages):
+        errors.append(f"gh api {endpoint}: search timed out with incomplete results")
+    return [item for page in pages for item in (page.get("items", []) if isinstance(page, dict) else page)]
+
+
+def review_comments(since, until):
+    """Rows of (pr, time, author, path, excerpt) for other people's review comments on PRs the user authored or reviewed.
+
+    Ceiling: inline review comments only; findings posted as review summaries or PR conversation comments are missed.
+    Returns a skip reason instead when gh is missing or signed out.
+    """
+    if not shutil.which("gh"):
+        return "gh not found"
+    me = subprocess.run(["gh", "api", "user", "--jq", ".login"], capture_output=True, text=True)
+    if me.returncode:
+        if re.search(r"HTTP 401|gh auth login", me.stderr):
+            return "gh not signed in: " + clip(me.stderr, 120)
+        errors.append(f"gh api user: {clip(me.stderr)}")
+        return "gh api user failed"
+    me = me.stdout.strip()
+    # `updated` is the PR's latest update, so a PR updated after the window can still hold comments inside it:
+    # search with only the lower bound, as a UTC date, and apply both bounds to each comment.
+    window = f"updated:>={since.astimezone(dt.timezone.utc).date()}"
+    prs = set()
+    for role in ("author", "reviewed-by"):
+        for item in gh_json("search/issues", f"q=is:pr {role}:{me} {window}", "per_page=100"):
+            prs.add(item["pull_request"]["url"].split("/repos/", 1)[1])
+
+    def fetch(pr):
+        return pr, gh_json(f"repos/{pr}/comments", "per_page=100")
+
+    rows = []
+    with concurrent.futures.ThreadPoolExecutor(8) as pool:
+        for pr, comments in pool.map(fetch, sorted(prs)):
+            for c in comments:
+                ts = parse_ts(c.get("created_at"))
+                author = (c.get("user") or {}).get("login", "")
+                # Replies are discussion of a finding, not new findings.
+                if c.get("in_reply_to_id") or author == me or ts < since or (until and ts >= until):
+                    continue
+                body = re.sub(r"<!--.*?-->|</?(details|summary)>", " ", c.get("body") or "", flags=re.S)
+                rows.append((pr.replace("/pulls/", "#"), local(ts), author, c.get("path", ""), clip(body, 300)))
+    return rows
+
+
 def git_root(path, cache={}):
     if path not in cache:
         cache[path] = None
@@ -622,6 +677,14 @@ def run_report(args):
     for key, ids in sorted(seen.items(), key=lambda kv: (-len(kv[1]), kv[0])):
         if len(ids) >= 2:
             print(f"{len(ids)}\t{key}\t{', '.join(sorted(i[:8] for _, i in ids)[:5])}")
+
+    rows = review_comments(since, until)
+    if isinstance(rows, str):
+        print(f"\n## PR review comments skipped: {rows}")
+    else:
+        print("\n## PR review comments on PRs you authored or reviewed\npr\ttime\tauthor\tpath\texcerpt")
+        for row in rows:
+            print("\t".join(row))
 
     print("\n## memories\nharness\tmodified\tsessions\tpath\tdescription")
     for row in memories():
