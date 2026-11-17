@@ -7,8 +7,8 @@ Usage:
 
 Reads the session logs of each supported harness that exists on this machine
 and skips the rest. Prints tab-separated sections: harnesses, sessions,
-signals, repeated commands, PR review comments, memories, and Remove-When trailers.
-PR review comments need an authenticated gh and are skipped without one. Subagent sessions are
+signals, repeated commands, PR comments, memories, and Remove-When trailers.
+PR comments need an authenticated gh and are skipped without one. Subagent sessions are
 folded into the session that started them; sessions that ran agent-retro, or a skill
 named like it (see RETRO_SKILL), are listed but their signals are skipped; one-shot sessions (see one_shot) are dropped. Exits 2 when a log line can't be parsed.
 
@@ -570,9 +570,9 @@ def gh_json(endpoint, *fields):
 
 
 def review_comments(since, until):
-    """Rows of (pr, time, author, path, excerpt) for other people's review comments on PRs the user authored or reviewed.
+    """Rows of (pr, time, author, where, excerpt) for other people's comments and review summaries on PRs the user took part in.
 
-    Ceiling: inline review comments only; findings posted as review summaries or PR conversation comments are missed.
+    `where` is the file of an inline comment, `review` for a review summary, or `conversation`.
     Returns a skip reason instead when gh is missing or signed out.
     """
     if not shutil.which("gh"):
@@ -588,24 +588,29 @@ def review_comments(since, until):
     # search with only the lower bound, as a UTC date, and apply both bounds to each comment.
     window = f"updated:>={since.astimezone(dt.timezone.utc).date()}"
     prs = set()
-    for role in ("author", "reviewed-by"):
+    # `involves` covers author, assignee, mentions, and commenter, but not a review without comments.
+    for role in ("involves", "reviewed-by"):
         for item in gh_json("search/issues", f"q=is:pr {role}:{me} {window}", "per_page=100"):
             prs.add(item["pull_request"]["url"].split("/repos/", 1)[1])
 
     def fetch(pr):
-        return pr, gh_json(f"repos/{pr}/comments", "per_page=100")
+        return pr, (
+            [(c.get("path", ""), c) for c in gh_json(f"repos/{pr}/comments", "per_page=100")]
+            + [("review", c) for c in gh_json(f"repos/{pr}/reviews", "per_page=100")]
+            + [("conversation", c) for c in gh_json(f"repos/{pr.replace('/pulls/', '/issues/')}/comments", "per_page=100")]
+        )
 
     rows = []
     with concurrent.futures.ThreadPoolExecutor(8) as pool:
         for pr, comments in pool.map(fetch, sorted(prs)):
-            for c in comments:
-                ts = parse_ts(c.get("created_at"))
+            for where, c in comments:
+                ts = parse_ts(c.get("created_at") or c.get("submitted_at"))
                 author = (c.get("user") or {}).get("login", "")
-                # Replies are discussion of a finding, not new findings.
-                if c.get("in_reply_to_id") or author == me or ts < since or (until and ts >= until):
+                body = re.sub(r"<!--.*?-->|</?(details|summary)>", " ", c.get("body") or "", flags=re.S).strip()
+                # Replies are discussion of a finding, not new findings; a pending review has no time yet.
+                if not body or c.get("in_reply_to_id") or author == me or not ts or ts < since or (until and ts >= until):
                     continue
-                body = re.sub(r"<!--.*?-->|</?(details|summary)>", " ", c.get("body") or "", flags=re.S)
-                rows.append((pr.replace("/pulls/", "#"), local(ts), author, c.get("path", ""), clip(body, 300)))
+                rows.append((pr.replace("/pulls/", "#"), local(ts), author, where, clip(body, 300)))
     return rows
 
 
@@ -682,11 +687,16 @@ def run_report(args):
 
     rows = review_comments(since, until)
     if isinstance(rows, str):
-        print(f"\n## PR review comments skipped: {rows}")
+        print(f"\n## PR comments skipped: {rows}")
     else:
-        print("\n## PR review comments on PRs you authored or reviewed\npr\ttime\tauthor\tpath\texcerpt")
+        print("\n## PR comments and reviews on PRs you took part in (repeats folded)\npr\ttime\tauthor\twhere\texcerpt")
+        # Bots post the same status text on every PR; print it once with a count of the other PRs.
+        groups = collections.defaultdict(list)
         for row in rows:
-            print("\t".join(row))
+            groups[row[2:]].append(row)
+        for group in groups.values():
+            pr, *rest = group[0]
+            print("\t".join([pr + (f" (+{len(group) - 1} more)" if len(group) > 1 else "")] + rest))
 
     print("\n## memories\nharness\tmodified\tsessions\tpath\tdescription")
     for row in memories():
