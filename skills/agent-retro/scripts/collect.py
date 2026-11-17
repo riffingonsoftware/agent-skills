@@ -9,8 +9,8 @@ Reads the session logs of each supported harness that exists on this machine
 and skips the rest. Prints tab-separated sections: harnesses, sessions,
 signals, repeated commands, PR review comments, memories, and Remove-When trailers.
 PR review comments need an authenticated gh and are skipped without one. Subagent sessions are
-folded into the session that started them; sessions that ran agent-retro are
-listed but their signals are skipped; one-shot sessions (see one_shot) are dropped. Exits 2 when a log line can't be parsed.
+folded into the session that started them; sessions that ran agent-retro, or a skill
+named like it (see RETRO_SKILL), are listed but their signals are skipped; one-shot sessions (see one_shot) are dropped. Exits 2 when a log line can't be parsed.
 
 Supported: Claude Code (~/.claude/projects), Codex (~/.codex/sessions).
 Repeated-command detection is a heuristic: it groups shell commands by program
@@ -53,6 +53,8 @@ MASKED = re.compile(
 DENIED = re.compile(r"doesn'?t want to proceed|rejected by user|permission denied by|denied by (the )?user|blocked by hook|not approved", re.I)
 # checkout --, restore and stash also undo the deliberate breaks of a fail-without-the-fix check.
 REVERT = re.compile(r"\bgit (revert\b|reset --hard)")
+# agent-retro, or a wrapper skill that runs it, such as team-retro.
+RETRO_SKILL = r"[\w:-]+-retro"
 BROWSER = re.compile(r"preview_|browser|playwright|chrome|puppeteer", re.I)
 SKIP_USER = (
     "<task-notification", "Context handoff", "<command-", "<local-command", "Caveat:", "This session is being continued",
@@ -166,7 +168,7 @@ def load_claude(path):
                 btype = block.get("type")
                 if btype == "text":
                     text = block.get("text", "")
-                    if "<command-name>/agent-retro" in text:
+                    if re.search(rf"<command-name>/{RETRO_SKILL}<", text):
                         session.retro = True
                     session.add(ts, "user", text)
                 elif btype == "image":
@@ -183,7 +185,7 @@ def load_claude(path):
                 elif btype == "tool_use":
                     name, data = block.get("name", ""), block.get("input") or {}
                     tool_names[block.get("id")] = name
-                    if name == "Skill" and data.get("skill") == "agent-retro":
+                    if name == "Skill" and re.fullmatch(RETRO_SKILL, str(data.get("skill"))):
                         session.retro = True
                     if name == "Bash" and isinstance(data.get("command"), str):
                         session.commands.append((ts, data["command"]))
@@ -276,7 +278,7 @@ def load_codex(path):
         elif rtype == "response_item" and ptype == "message" and payload.get("role") == "user":
             recognized += 1
             text = text_of(payload.get("content"))
-            if not text.lstrip().startswith(SKIP_USER) and re.search(r"\$agent-retro\b|\b(use|run)\b[^.\n]{0,40}\bagent-retro\b", text, re.I):
+            if not text.lstrip().startswith(SKIP_USER) and re.search(rf"\${RETRO_SKILL}(?![\w:-])|\b(use|run)\b[^.\n]{{0,40}}\b{RETRO_SKILL}(?![\w:-])", text, re.I):
                 session.retro = True
             session.add(ts, "user", text)
         elif rtype == "response_item" and ptype == "message" and payload.get("role") == "assistant":
