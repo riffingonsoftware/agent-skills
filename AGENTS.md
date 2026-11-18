@@ -10,9 +10,7 @@ Portable, tool-agnostic agent skills. `skills/*/SKILL.md` is the canonical sourc
 
 - Keep skills short and imperative. Apply `write-for-agents` whenever you edit a skill,
   `AGENTS.md`, or `CLAUDE.md`.
-- When adding, renaming, or removing a skill, update `skills/.devin-plugin/plugin.json`, the skill links
-  in `riffingonsoftware/dotfiles`, and the Windows install list in `riffingonsoftware/starfleet`. `cz apply` stops while this
-  checkout has uncommitted changes.
+- When adding, renaming, or removing a skill, update `skills/.devin-plugin/plugin.json`.
 - Preserve attribution for forked skills (see README).
 - No build or tests. Skill scripts use only the standard library, run on Python 3.9 or later (uv may pick macOS's
   system Python), and run with `uv run --no-project`. Ask before adding any other dependency or tooling.
