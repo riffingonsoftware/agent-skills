@@ -42,4 +42,4 @@ Open every PR ready, never as a draft. Cloud-agent PR tools default to draft, so
 
 After opening each PR, invoke `babysit-pr` for that PR and carry it through to readiness or a reported blocker. For a stack, open every PR in it first, then babysit each one: babysitting stalls the build, and a fix to a parent restacks its children. Opening the PR alone does not complete this workflow.
 
-A subagent that opens a PR runs `deslop` and `no-comments`, then also babysits it, unless the PR belongs to a stack the parent is still building. Relay human feedback and ambiguous findings to the parent for the user. Return the PR URL and final status.
+A subagent that opens a PR runs `deslop` and `no-comments`, then returns the PR URL, head SHA, and the state of checks and reviews. Only the thread that owns the PR watches it, and the parent owns it.
