@@ -34,7 +34,7 @@ Then add these sections in order:
 - `## Tradeoffs`. State real choices, rejected alternatives, known limits, and what could break. Say what stays the same when a reviewer might wonder. If the base branch fails without the fix, name the continuing cost. Drop this section when there is nothing to say.
 - `## Verification`. State how you ran each check and its rigor. Name the real path, such as the CLI command, the UI flow, or the targeted tests. State the outcome of each check, not only the command name.
 
-After these sections, attach screenshots or videos when they prove a claim. Do not add `## Summary` or `## Test plan` boilerplate. Apply `unslop` to the completed description.
+After these sections, attach screenshots or videos when they prove a claim. Do not add `## Summary` or `## Test plan` boilerplate. Keep the description under 40 lines. Apply `unslop` to the completed description.
 
 Prefer five narrow PRs to one large PR. Use the repository's configured stacking tool, and keep the ordered stack visible to reviewers. Branch from the base only for independent work. Rebase on the latest base before substantial stack work.
 
