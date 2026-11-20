@@ -24,7 +24,7 @@ Read and run everything in a snapshot of the target's head, never in the user's 
 4. Rerun each finding's command. Keep a finding when its output still shows wrong behavior. Drop the rest. Merge findings that share a root cause.
 5. Record the head SHA. Before reporting, look it up again, and for uncommitted changes rerun both path lists and compare every path on the old or new lists with its snapshot copy. If anything changed, update the snapshot and review again.
 
-Delete the snapshot with `rm -r <path>` before you return, including when you stop early; Codex refuses `rm -rf`.
+Delete the snapshot with `rm -r -- <path> </dev/null` before you return, including when you stop early; Codex refuses `rm -rf`.
 
 ## Report
 
