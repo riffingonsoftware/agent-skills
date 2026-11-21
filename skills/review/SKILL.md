@@ -13,18 +13,17 @@ Don't comment on, approve, or request changes on a PR; draft any comment for the
 
 ## Snapshot
 
-Read and run everything in a snapshot of the target's head, never in the user's checkout. In the checkout, run only the commands below; even `git status` and `git diff` can rewrite its index.
+Read and run everything in a snapshot of the target's head, never in the user's checkout. In the checkout, run only `git rev-parse` and this skill's `scripts/snapshot.py`; even `git status` and `git diff` can rewrite its index.
 
-1. Find the checkout. For a PR, it's `~/projects/<repo>`; if that path doesn't exist, clone the repository there with `gh repo clone <owner>/<repo> ~/projects/<repo>`. Clone the checkout into a new temporary directory with `git clone --shared --no-checkout`. Resolve refs to SHAs in the checkout with `git rev-parse`, because the snapshot's `origin/<branch>` is the checkout's local branch.
-2. Check out the head:
-   - For a PR, fetch `pull/<number>/head` and `baseRefOid` from the PR's repository URL, confirm the head matches `headRefOid`, and read the change as `git diff <baseRefOid>...<headRefOid>`, because the checkout's branches can be weeks old. Pass the PR URL to every `gh pr` command, because `gh` can't find the repository from the snapshot.
-   - For uncommitted changes, check out `HEAD`, then list the changed paths in the checkout with `git diff-index --name-only HEAD` and `git ls-files -o --exclude-standard`. Copy each into the snapshot, keeping symlinks as links, or delete it there if the checkout no longer has it.
+1. Find the checkout. For a PR, it's `~/projects/<repo>`; if that path doesn't exist, clone the repository there with `gh repo clone <owner>/<repo> ~/projects/<repo>`. Resolve any other ref, such as a branch's base, with `git rev-parse` in the checkout, because the snapshot's `origin/<branch>` is the checkout's local branch.
+2. From this skill's directory, run `uv run --no-project scripts/snapshot.py create <checkout>` with `--pr <url>` for a PR, `--rev <rev>` for a commit or branch, or neither for uncommitted changes. Work in the `repo:` path it prints.
+   - For a PR, read the change as `git diff <base>...<head>` with the printed SHAs, because the checkout's branches can be weeks old. Pass the PR URL to every `gh pr` command, because `gh` can't find the repository from the snapshot.
    - For a merge commit, read the change with `git show --first-parent`.
 3. Run the repository's focused checks and rerun any checks you were told passed. Before you drop a suspected defect, including one you found only by reading code, try to prove it with a small throwaway command in the snapshot. If proving it needs something the snapshot lacks, such as credentials or a cluster, list it as unverified instead of dropping it. Install dependencies only with the repository's locked install command, such as `npm ci`. If the repository uses mise, prefix commands with `MISE_TRUSTED_CONFIG_PATHS=<snapshot path>`, because mise ignores config at an untrusted path. If a check needs ignored config such as `.env`, list it as unverified instead of copying the config.
 4. Rerun each finding's command. Keep a finding when its output still shows wrong behavior. Drop the rest. Merge findings that share a root cause.
-5. Record the head SHA. Before reporting, look it up again, and for uncommitted changes rerun both path lists and compare every path on the old or new lists with its snapshot copy. If anything changed, update the snapshot and review again.
+5. Record the head SHA. Before reporting, rerun `create` and compare the new snapshot with the one you reviewed: the head SHA and, for uncommitted changes, every file `git ls-files -co --exclude-standard` lists in either. If anything changed, review the new snapshot.
 
-Delete the snapshot with `rm -r -- <path> </dev/null` before you return, including when you stop early; Codex refuses `rm -rf`.
+Delete every snapshot with `uv run --no-project scripts/snapshot.py remove <path>` before you return, including when you stop early.
 
 ## Report
 
