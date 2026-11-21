@@ -40,7 +40,7 @@ Each round is one unit of work:
 Stop at the first of:
 
 1. The goal is met. Stop there; never raise the bar.
-2. Stuck: the last two verdicts rank the same top gaps first, and closing them needs something only the user can supply, such as an asset, credentials, or access. Log what the user must supply, then start the fallback work, or stop if there is none.
+2. Stuck: the last two verdicts rank the same top gaps first, and closing them needs something only the user can supply, such as a paid asset, credentials, or access. Log what the user must supply, then start the fallback work, or stop if there is none.
 3. A deadline, such as a burn-down's stop time. Report the goal as not met.
 
 Report whether the goal was met, the best kept version's commit, the log's round table, the remaining gaps, and every decision for the user to revisit.
