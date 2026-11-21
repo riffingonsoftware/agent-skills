@@ -30,7 +30,7 @@ Each round is one unit of work:
 ## Judges
 
 - Use the judges the user's instructions name, if any. Otherwise use one subagent on the strongest model available, such as Claude Opus. In T3 Code, `delegate_task` reaches other providers' models.
-- Start every judge in a fresh context. Give it the evidence for the current and last kept versions, the references, and what it needs to read them, such as which art is placeholder and which odd-looking choices are deliberate. Withhold your opinion of the change and the goal's score.
+- Start every judge in a fresh context. Give it the evidence for the current and last kept versions, the references, and what it needs to read them, such as which art is placeholder and which odd-looking choices are deliberate. For images, give it a way to crop and diff them, `uv run --with pillow`; ImageMagick and a system Pillow may be missing. Withhold your opinion of the change and the goal's score.
 - Ask each judge: Is the current version better than the last kept one? Score the current version, the last kept version, and each reference from 1 to 10 in each category. Rank the remaining gaps by how much each would close per unit of effort.
 - A round meets the goal when every judge scores every category at the goal's score, or at least each reference's score. With one judge, confirm with a second fresh judge on the same evidence; the goal is met only if both agree.
 - Taste is the judges' call. Never stop or ask the user over a design or taste decision: make the call, log it, and continue.
