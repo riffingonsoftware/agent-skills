@@ -540,20 +540,35 @@ def memories():
 
 
 def remove_when(repos):
+    # Scans whole messages, since git reads trailers only from the last paragraph.
     rows = []
     for repo in sorted(repos):
+        # Every worktree's HEAD, so a fix committed on a worktree branch counts before the main checkout has it.
+        listing = subprocess.run(["git", "-C", repo, "worktree", "list", "--porcelain"], capture_output=True, text=True)
+        heads = sorted({"HEAD"} | {line[5:] for line in listing.stdout.splitlines() if line.startswith("HEAD ")})
         result = subprocess.run(
-            ["git", "-C", repo, "log", "--date=short",
-             "--format=%h%x09%ad%x09%s%x09%(trailers:key=Remove-When,valueonly,unfold,separator=%x1f)"],
+            ["git", "-C", repo, "log", "--date=short", "--format=%x1e%h%x09%ad%x09%s%x09%B", *heads],
             capture_output=True, text=True,
         )
         if result.returncode:
             errors.append(f"{repo}: git log failed: {clip(result.stderr)}")
             continue
-        for line in result.stdout.splitlines():
-            fields = line.split("\t")
-            if len(fields) == 4:
-                rows.extend((repo, *fields[:3], value.strip()) for value in fields[3].split("\x1f") if value.strip())
+        for record in result.stdout.split("\x1e")[1:]:
+            fields = record.split("\t", 3)
+            if len(fields) < 4:
+                continue
+            values, continued = [], False
+            for line in fields[3].splitlines():
+                match = re.match(r"Remove-When:(.*)", line, re.I)
+                if match:
+                    values.append(match.group(1).strip())
+                elif continued and line.strip() and not re.match(r"[\w-]+:", line):
+                    values[-1] += " " + line.strip()
+                else:
+                    continued = False
+                    continue
+                continued = True
+            rows.extend((repo, *fields[:3], value) for value in values if value)
     return rows
 
 
@@ -618,9 +633,16 @@ def git_root(path, cache={}):
     if path not in cache:
         cache[path] = None
         if path and os.path.isdir(path):
-            result = subprocess.run(["git", "-C", path, "rev-parse", "--show-toplevel"], capture_output=True, text=True)
-            if result.returncode == 0:
-                cache[path] = os.path.realpath(result.stdout.strip())
+            # A linked worktree maps to its main checkout, so each repo is listed once.
+            dirs = subprocess.run(["git", "-C", path, "rev-parse", "--path-format=absolute", "--git-dir", "--git-common-dir"],
+                                  capture_output=True, text=True)
+            if dirs.returncode == 0:
+                git_dir, common = (os.path.realpath(d) for d in dirs.stdout.split("\n")[:2])
+                if git_dir != common:
+                    cache[path] = os.path.dirname(common)
+                else:
+                    top = subprocess.run(["git", "-C", path, "rev-parse", "--show-toplevel"], capture_output=True, text=True)
+                    cache[path] = os.path.realpath(top.stdout.strip()) if top.returncode == 0 else common
     return cache[path]
 
 
