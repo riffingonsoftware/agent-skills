@@ -12,7 +12,7 @@ PR comments need an authenticated gh and are skipped without one. Subagent sessi
 folded into the session that started them; sessions that ran agent-retro, or a skill
 named like it (see RETRO_SKILL), are listed but their signals are skipped; one-shot sessions (see one_shot) are dropped. Exits 2 when a log line can't be parsed.
 
-Supported: Claude Code (~/.claude/projects), Codex (~/.codex/sessions).
+Supported: Claude Code (~/.claude/projects), Codex (~/.codex/sessions), Cursor (~/.cursor/projects).
 Repeated-command detection is a heuristic: it groups shell commands by program
 and subcommand, and inline scripts by the paths and hosts they touch.
 """
@@ -26,14 +26,17 @@ import os
 import re
 import shlex
 import shutil
+import sqlite3
 import subprocess
 import sys
 import time
+import urllib.parse
 
 HOME = os.path.expanduser("~")
 CLAUDE = os.path.join(HOME, ".claude", "projects")
 CODEX = os.path.join(HOME, ".codex", "sessions")
 CODEX_MEMORIES = os.path.join(HOME, ".codex", "memories")
+CURSOR = os.path.join(HOME, ".cursor", "projects")
 
 CORRECTION = re.compile(
     r"^(no\b|nope|wait\b|hmm|stop\b|actually\b|again\b)|\b(didn'?t|don'?t|doesn'?t|wrong|instead|i said|i asked|"
@@ -300,6 +303,254 @@ def load_codex(path):
     return session
 
 
+CURSOR_MONTHS = {
+    "Jan": 1, "Feb": 2, "Mar": 3, "Apr": 4, "May": 5, "Jun": 6,
+    "Jul": 7, "Aug": 8, "Sep": 9, "Oct": 10, "Nov": 11, "Dec": 12,
+}
+CURSOR_TS = re.compile(
+    r"<timestamp>\s*(?:[A-Za-z]+,\s*)?([A-Za-z]{3})\s+(\d{1,2}),\s*(\d{4}),\s*"
+    r"(\d{1,2}):(\d{2})\s*([AP]M)\s*\(UTC(?:([+-])(\d{1,2})(?::(\d{2}))?)?\)\s*</timestamp>"
+)
+CURSOR_WRAPPER_TAGS = re.compile(
+    r"<(timestamp|image_files|t3_code_orchestration_instructions|runtime_info|"
+    r"pull_request_linking|attached_files|system_reminder)\b[^>]*>.*?</\1>",
+    re.S,
+)
+CURSOR_SKILL_BLOCK = re.compile(
+    r"(?:The user invoked these skills\. Follow their instructions:\s*)?<skill\b[^>]*>.*?</skill>",
+    re.S,
+)
+CURSOR_RETRO = re.compile(
+    rf"<skill\b[^>]*\bname=[\"']{RETRO_SKILL}[\"']|(?<![\w/.-])[/$]{RETRO_SKILL}(?![\w:-])|"
+    rf"\b(?:use|run)\s+(?:the\s+)?{RETRO_SKILL}(?![\w:-])",
+    re.I,
+)
+CURSOR_COMPACTION = ("<available_subagent_types", "<dynamic_tool_catalog", "<user_info")
+
+
+def cursor_id(raw):
+    return raw[6:] if raw and raw.startswith("agent-") else raw
+
+
+def parse_cursor_ts(text):
+    match = CURSOR_TS.search(text or "")
+    if not match:
+        return None
+    mon, day, year, hour, minute, ampm, sign, oh, om = match.groups()
+    month = CURSOR_MONTHS.get(mon)
+    if not month:
+        return None
+    h24 = int(hour) % 12 + (12 if ampm == "PM" else 0)
+    if sign:
+        delta = dt.timedelta(hours=int(oh), minutes=int(om or 0))
+        tz = dt.timezone(-delta if sign == "-" else delta)
+    else:
+        tz = dt.timezone.utc
+    return dt.datetime(int(year), month, int(day), h24, int(minute), tzinfo=tz)
+
+
+def cursor_user_text(raw):
+    has_image = "[Image]" in raw or "<image_files>" in raw
+    ts = parse_cursor_ts(raw)
+    match = re.search(r"<user_request>\s*(.*?)\s*</user_request>", raw, re.S) or re.search(
+        r"<user_query>\s*(.*?)\s*</user_query>", raw, re.S
+    )
+    body = CURSOR_WRAPPER_TAGS.sub("", match.group(1) if match else raw)
+    retro = not body.lstrip().startswith(SKIP_USER) and bool(CURSOR_RETRO.search(body))
+    body = CURSOR_SKILL_BLOCK.sub("", body)
+    body = re.sub(r"(?:^|\n)\[Image\](?=\n|$)", "", body).strip()
+    return ts, body, has_image, retro
+
+
+def resolve_cursor_slug(slug, cache={}):
+    if slug not in cache:
+        def walk(cur, rem):
+            if not rem:
+                return cur
+            try:
+                entries = sorted(os.listdir(cur), key=len, reverse=True)
+            except OSError:
+                return None
+            for entry in entries:
+                norm = re.sub(r"[^A-Za-z0-9]+", "-", entry.lstrip(".")).strip("-")
+                if not norm or (rem != norm and not rem.startswith(norm + "-")):
+                    continue
+                cand = os.path.join(cur, entry)
+                if not os.path.isdir(cand):
+                    continue
+                if rem == norm:
+                    return cand
+                hit = walk(cand, rem[len(norm) + 1:])
+                if hit:
+                    return hit
+            return None
+        cache[slug] = walk("/", slug) or "" if slug else ""
+    return cache[slug]
+
+
+def cursor_tool_result(msg):
+    args = msg.get("args") if isinstance(msg.get("args"), dict) else {}
+    name = msg.get("name", "")
+    if name == "mcp":
+        provider, tool = args.get("providerIdentifier", ""), args.get("toolName", "")
+        label = f"{provider}:{tool}" if provider and tool else (tool or name)
+    else:
+        label = name
+    res = msg.get("result") if isinstance(msg.get("result"), dict) else {}
+    val = res.get("value")
+    if name == "shell":
+        body = " ".join(
+            x for x in ((val.get("stdout") or "", val.get("stderr") or "") if isinstance(val, dict) else (text_of(val),)) if x
+        )
+        code = val.get("exitCode") if isinstance(val, dict) else None
+        if res.get("status") != "success" or (isinstance(code, int) and code != 0):
+            detail = f"exit {code}: {body}" if isinstance(code, int) and code != 0 else (text_of(res.get("error")) or body or str(res.get("status", "")))
+            return "result-error", f"{label}: {detail}"
+        return "result", f"{label}: {body}"
+    if res.get("status") != "success":
+        err = res.get("error") or res
+        return "result-error", f"{label}: {text_of(err) or json.dumps(err, ensure_ascii=False)}"
+    if isinstance(val, dict) and val.get("isError") is True:
+        return "result-error", f"{label}: {text_of(val.get('content', val))}"
+    return "result", f"{label}: {text_of(val) if val is not None else ''}"
+
+
+def cursor_index(cache={}):
+    # Cursor's JSONL transcripts omit tool results and cwd; sdk-agent-store supplies both for SDK runs.
+    if CURSOR in cache:
+        return cache[CURSOR]
+    data = {}
+    for db in glob.glob(os.path.join(CURSOR, "*", "sdk-agent-store", "*", "index.db")):
+        conn = None
+        try:
+            conn = sqlite3.connect(f"file:{urllib.parse.quote(db, safe='/:')}?mode=ro", uri=True, timeout=1.0)
+            by_run = {}
+            for agent_id, workspace_ref in conn.execute("SELECT agent_id, workspace_ref FROM agents"):
+                sid = cursor_id(agent_id)
+                data[sid] = {"cwd": workspace_ref or "", "start": None, "events": []}
+            for run_id, agent_id, status, error_code, started_at, finished_at, cancelled_at in conn.execute(
+                "SELECT run_id, agent_id, status, error_code, started_at, finished_at, cancelled_at FROM runs ORDER BY turn_number"
+            ):
+                sid = cursor_id(agent_id)
+                entry = data.setdefault(sid, {"cwd": "", "start": None, "events": []})
+                by_run[run_id] = entry
+                if started_at and entry["start"] is None:
+                    entry["start"] = parse_ts(started_at)
+                if cancelled_at or status in ("CANCELLED", "ABORTED"):
+                    entry["events"].append((parse_ts(cancelled_at or finished_at or started_at), "interrupt", f"run {status}"))
+                elif error_code or status == "ERROR":
+                    entry["events"].append((parse_ts(finished_at or started_at), "result-error", f"run: {error_code or status}"))
+            for run_id, created_at, payload_json in conn.execute(
+                "SELECT run_id, created_at, payload_json FROM run_events WHERE payload_json IS NOT NULL ORDER BY run_id, seq"
+            ):
+                entry = by_run.get(run_id)
+                if entry is None:
+                    continue
+                try:
+                    record = json.loads(payload_json)
+                except json.JSONDecodeError:
+                    continue
+                msg = record.get("message") or {}
+                if msg.get("type") == "tool_call" and msg.get("status") == "completed":
+                    entry["events"].append((parse_ts(created_at), *cursor_tool_result(msg)))
+        except sqlite3.Error as exc:
+            errors.append(f"{db}: {exc}")
+        finally:
+            if conn is not None:
+                conn.close()
+    cache[CURSOR] = data
+    return data
+
+
+def load_cursor(path):
+    parts = path.split(os.sep)
+    sid = cursor_id(os.path.basename(path)[:-6])
+    session = Session("cursor", sid, path)
+    if "subagents" in parts:
+        index = parts.index("subagents")
+        parent_dir = parts[index - 1]
+        session.parent = cursor_id(parent_dir)
+        session.root_path = os.path.join(os.sep.join(parts[:index]), parent_dir + ".jsonl")
+        session.is_subagent = True
+    slug = parts[parts.index("agent-transcripts") - 1] if "agent-transcripts" in parts else ""
+    db = cursor_index()
+    cwd_info = db.get(session.parent if session.is_subagent else session.id) or {}
+    info = None if session.is_subagent else cwd_info
+    session.cwd = cwd_info.get("cwd") or resolve_cursor_slug(slug)
+    ts = (info or {}).get("start") or dt.datetime.fromtimestamp(os.path.getmtime(path), dt.timezone.utc)
+    recognized = 0
+    last_user = None
+    replayed = False
+    for record in read_jsonl(path):
+        role = record.get("role")
+        if role not in ("user", "assistant"):
+            if record.get("type") == "turn_ended":
+                recognized += 1
+                status = record.get("status")
+                if status and status != "success":
+                    kind = "interrupt" if re.search(r"cancel|abort|interrupt", str(status), re.I) else "result-error"
+                    session.add(ts, kind, f"turn_ended: {status}")
+            continue
+        recognized += 1
+        content = (record.get("message") or {}).get("content")
+        blocks = [{"type": "text", "text": content}] if isinstance(content, str) else content or []
+        if role == "user":
+            raw_parts = []
+            has_img_block = False
+            for block in blocks:
+                if not isinstance(block, dict):
+                    continue
+                btype = block.get("type")
+                if btype == "text":
+                    raw_parts.append(block.get("text", ""))
+                elif btype == "image":
+                    has_img_block = True
+            raw = "\n".join(raw_parts)
+            msg_ts, body, has_image, retro = cursor_user_text(raw)
+            if msg_ts:
+                ts = msg_ts
+            if retro:
+                session.retro = True
+            if body.lstrip().startswith(CURSOR_COMPACTION):
+                replayed = True
+                continue
+            if replayed and (ts, body) == last_user:
+                replayed = False
+                continue
+            replayed = False
+            if body:
+                last_user = (ts, body)
+            if has_img_block or has_image:
+                session.add(ts, "image", "")
+            if body:
+                session.add(ts, "user", body)
+        else:
+            for block in blocks:
+                if not isinstance(block, dict):
+                    continue
+                btype = block.get("type")
+                if btype == "text":
+                    session.add(ts, "assistant", block.get("text", ""))
+                elif btype == "tool_use":
+                    name, data = block.get("name", ""), block.get("input") or {}
+                    if name == "Shell" and isinstance(data.get("command"), str):
+                        session.commands.append((ts, data["command"]))
+                    if name == "CallDynamicTool":
+                        ns, tn = data.get("namespace", ""), data.get("toolName", "")
+                        call_name = f"{ns}:{tn}" if ns and tn else (tn or name)
+                        call_data = data.get("arguments") if isinstance(data.get("arguments"), dict) else data
+                    else:
+                        call_name, call_data = name, data
+                    session.add(ts, "call", f"{call_name} {json.dumps(call_data, ensure_ascii=False)}")
+    if info and info["events"]:
+        for ev_ts, kind, text in info["events"]:
+            session.add(ev_ts or ts, kind, text)
+        session.events.sort(key=lambda e: e[0] or dt.datetime.max.replace(tzinfo=dt.timezone.utc))
+    if not recognized and os.path.getsize(path) > 0 and not session.parent:
+        errors.append(f"{path}: no recognized records; the log format may have changed")
+    return session
+
+
 def find_files(root, pattern, since):
     if not os.path.isdir(root):
         return []
@@ -307,7 +558,7 @@ def find_files(root, pattern, since):
     return [p for p in glob.glob(os.path.join(root, pattern), recursive=True) if os.path.getmtime(p) >= cutoff]
 
 
-LOADERS = {"claude-code": load_claude, "codex": load_codex}
+LOADERS = {"claude-code": load_claude, "codex": load_codex, "cursor": load_cursor}
 
 
 def codex_index():
@@ -344,6 +595,7 @@ def load_all(since):
     for harness, root, pattern, loader in (
         ("claude-code", CLAUDE, "**/*.jsonl", load_claude),
         ("codex", CODEX, "**/*.jsonl", load_codex),
+        ("cursor", CURSOR, "*/agent-transcripts/**/*.jsonl", load_cursor),
     ):
         if not os.path.isdir(root):
             continue
@@ -741,6 +993,13 @@ def run_context(args):
             root_id = parts[parts.index("subagents") - 1] if "subagents" in parts else os.path.basename(path)[:-6]
             if root_id.startswith(prefix) or prefix in os.path.basename(path):
                 groups[("claude-code", root_id)].add(path)
+    if os.path.isdir(CURSOR):
+        for path in glob.glob(os.path.join(CURSOR, "*", "agent-transcripts", "**", "*.jsonl"), recursive=True):
+            parts = path.split(os.sep)
+            raw_root = parts[parts.index("subagents") - 1] if "subagents" in parts else os.path.basename(path)[:-6]
+            root_id = cursor_id(raw_root)
+            if root_id.startswith(prefix) or raw_root.startswith(prefix) or prefix in os.path.basename(path):
+                groups[("cursor", root_id)].add(path)
     for (harness, sid), (parent, path) in index.items():
         child = Session(harness, sid, path)
         child.parent = parent
