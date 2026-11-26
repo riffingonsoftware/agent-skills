@@ -7,7 +7,7 @@ Usage:
 
 Reads the session logs of each supported harness that exists on this machine
 and skips the rest. Prints tab-separated sections: harnesses, sessions,
-signals, repeated commands, PR comments, memories, and Remove-When trailers.
+signals, repeated commands, PR comments, routines, memories, and Remove-When trailers.
 PR comments need an authenticated gh and are skipped without one. Subagent sessions are
 folded into the session that started them; sessions that ran agent-retro, or a skill
 named like it (see RETRO_SKILL), are listed but their signals are skipped; one-shot sessions (see one_shot) are dropped. Exits 2 when a log line can't be parsed.
@@ -23,6 +23,7 @@ import datetime as dt
 import glob
 import json
 import os
+import plistlib
 import re
 import shlex
 import shutil
@@ -35,8 +36,10 @@ import urllib.parse
 HOME = os.path.expanduser("~")
 CLAUDE = os.path.join(HOME, ".claude", "projects")
 CODEX = os.path.join(HOME, ".codex", "sessions")
+CODEX_AUTOMATIONS = os.path.join(HOME, ".codex", "automations")
 CODEX_MEMORIES = os.path.join(HOME, ".codex", "memories")
 CURSOR = os.path.join(HOME, ".cursor", "projects")
+LAUNCH_AGENTS = os.path.join(HOME, "Library", "LaunchAgents")
 
 CORRECTION = re.compile(
     r"^(no\b|nope|wait\b|hmm|stop\b|actually\b|again\b)|\b(didn'?t|don'?t|doesn'?t|wrong|instead|i said|i asked|"
@@ -131,6 +134,7 @@ class Session:
         self.start = None
         self.events = []  # (ts, kind, text)
         self.commands = []  # (ts, shell command)
+        self.tokens = []  # (ts, token count)
         self.retro = False
         self.subagents = 0
         self.is_subagent = False
@@ -152,9 +156,10 @@ def load_claude(path):
         session.root_path = os.sep.join(parts[:index]) + ".jsonl"
         session.is_subagent = True
     tool_names = {}
+    usage_by_msg = {}
     recognized = 0
     unrecognized_messages = 0
-    for record in read_jsonl(path):
+    for index_line, record in enumerate(read_jsonl(path)):
         kind = record.get("type")
         if kind not in ("user", "assistant"):
             unrecognized_messages += "message" in record
@@ -162,7 +167,8 @@ def load_claude(path):
         recognized += 1
         ts = parse_ts(record.get("timestamp"))
         session.cwd = session.cwd or record.get("cwd", "")
-        content = (record.get("message") or {}).get("content")
+        message = record.get("message") or {}
+        content = message.get("content")
         if kind == "user":
             if record.get("isMeta"):
                 continue
@@ -181,6 +187,16 @@ def load_claude(path):
                     name = tool_names.get(block.get("tool_use_id"), "")
                     session.add(ts, "result-error" if block.get("is_error") else "result", f"{name}: {result}")
         else:
+            usage = message.get("usage")
+            if isinstance(usage, dict):
+                total = sum(
+                    usage.get(k) or 0
+                    for k in ("input_tokens", "cache_creation_input_tokens", "cache_read_input_tokens", "output_tokens")
+                )
+                mid = message.get("id") or index_line
+                prev_ts, prev_total = usage_by_msg.get(mid, (ts, 0))
+                if total >= prev_total:
+                    usage_by_msg[mid] = (ts or prev_ts, total)
             for block in content or []:
                 btype = block.get("type")
                 if btype == "text":
@@ -193,6 +209,7 @@ def load_claude(path):
                     if name == "Bash" and isinstance(data.get("command"), str):
                         session.commands.append((ts, data["command"]))
                     session.add(ts, "call", f"{name} {json.dumps(data, ensure_ascii=False)}")
+    session.tokens.extend((u_ts, u_tot) for u_ts, u_tot in usage_by_msg.values() if u_tot)
     # A session closed before any message holds only metadata records. A format change that also
     # renames the `message` field would slip past this check.
     if not recognized and unrecognized_messages and not session.parent:
@@ -265,6 +282,7 @@ def codex_result(output):
 def load_codex(path):
     session = Session("codex", os.path.basename(path)[:-6], path)
     recognized = 0
+    prev_tokens = 0
     for record in read_jsonl(path):
         payload = record.get("payload") or {}
         ts = parse_ts(record.get("timestamp"))
@@ -296,6 +314,18 @@ def load_codex(path):
         elif rtype == "response_item" and ptype in ("function_call_output", "custom_tool_call_output"):
             recognized += 1
             session.add(ts, *codex_result(payload.get("output")))
+        elif rtype == "event_msg" and ptype == "token_count":
+            info = payload.get("info") or {}
+            tot = (info.get("total_token_usage") or {}).get("total_tokens")
+            last = (info.get("last_token_usage") or {}).get("total_tokens")
+            if isinstance(tot, int):
+                if tot > prev_tokens:
+                    session.tokens.append((ts, tot - prev_tokens))
+                elif tot < prev_tokens and isinstance(last, int) and last > 0:
+                    session.tokens.append((ts, last))
+                prev_tokens = tot
+            elif isinstance(last, int) and last > 0:
+                session.tokens.append((ts, last))
         elif rtype == "event_msg" and ptype == "turn_aborted" and payload.get("reason") == "interrupted":
             session.add(ts, "interrupt", "")
     if not recognized and os.path.getsize(path) > 0:
@@ -427,15 +457,24 @@ def cursor_index(cache={}):
             by_run = {}
             for agent_id, workspace_ref in conn.execute("SELECT agent_id, workspace_ref FROM agents"):
                 sid = cursor_id(agent_id)
-                data[sid] = {"cwd": workspace_ref or "", "start": None, "events": []}
-            for run_id, agent_id, status, error_code, started_at, finished_at, cancelled_at in conn.execute(
-                "SELECT run_id, agent_id, status, error_code, started_at, finished_at, cancelled_at FROM runs ORDER BY turn_number"
+                data[sid] = {"cwd": workspace_ref or "", "start": None, "events": [], "tokens": []}
+            for run_id, agent_id, status, error_code, usage_json, started_at, finished_at, cancelled_at in conn.execute(
+                "SELECT run_id, agent_id, status, error_code, usage_json, started_at, finished_at, cancelled_at FROM runs ORDER BY turn_number"
             ):
                 sid = cursor_id(agent_id)
-                entry = data.setdefault(sid, {"cwd": "", "start": None, "events": []})
+                entry = data.setdefault(sid, {"cwd": "", "start": None, "events": [], "tokens": []})
                 by_run[run_id] = entry
                 if started_at and entry["start"] is None:
                     entry["start"] = parse_ts(started_at)
+                if usage_json:
+                    try:
+                        usage = json.loads(usage_json)
+                    except json.JSONDecodeError:
+                        usage = None
+                    if isinstance(usage, dict):
+                        total = usage.get("totalTokens") or ((usage.get("inputTokens") or 0) + (usage.get("outputTokens") or 0))
+                        if total:
+                            entry["tokens"].append((parse_ts(finished_at or started_at), total))
                 if cancelled_at or status in ("CANCELLED", "ABORTED"):
                     entry["events"].append((parse_ts(cancelled_at or finished_at or started_at), "interrupt", f"run {status}"))
                 elif error_code or status == "ERROR":
@@ -546,6 +585,8 @@ def load_cursor(path):
         for ev_ts, kind, text in info["events"]:
             session.add(ev_ts or ts, kind, text)
         session.events.sort(key=lambda e: e[0] or dt.datetime.max.replace(tzinfo=dt.timezone.utc))
+    if info and info["tokens"]:
+        session.tokens.extend((t_ts or ts, count) for t_ts, count in info["tokens"])
     if not recognized and os.path.getsize(path) > 0 and not session.parent:
         errors.append(f"{path}: no recognized records; the log format may have changed")
     return session
@@ -629,6 +670,7 @@ def fold(sessions, index):
         root.subagents += 1
         root.events.extend(s.events)
         root.commands.extend(s.commands)
+        root.tokens.extend(s.tokens)
         root.retro = root.retro or s.retro
         if s.start and (root.start is None or s.start < root.start):
             root.start = s.start
@@ -914,6 +956,87 @@ def one_shot(session):
     return kinds["user"] <= 1 and kinds["call"] <= 1 and all(k == "correction?" for _, k, _ in signals(session))
 
 
+def parse_toml_fields(text):
+    fields = {}
+    for match in re.finditer(r'^([A-Za-z0-9_-]+)\s*=\s*(""".*?"""|"(?:[^"\\]|\\.)*"|\'[^\']*\'|\S+)', text, re.M | re.S):
+        key, raw = match.groups()
+        if raw.startswith('"""'):
+            fields[key] = raw[3:-3]
+        elif raw.startswith('"'):
+            try:
+                fields[key] = json.loads(raw)
+            except json.JSONDecodeError:
+                fields[key] = raw[1:-1]
+        elif raw.startswith("'"):
+            fields[key] = raw[1:-1]
+        else:
+            fields[key] = raw
+    return fields
+
+
+def plist_schedule(plist):
+    parts = []
+    interval = plist.get("StartInterval")
+    if isinstance(interval, int):
+        if interval % 3600 == 0:
+            parts.append(f"every {interval // 3600}h")
+        elif interval % 60 == 0:
+            parts.append(f"every {interval // 60}m")
+        else:
+            parts.append(f"every {interval}s")
+    cal = plist.get("StartCalendarInterval")
+    if isinstance(cal, dict):
+        cal = [cal]
+    if isinstance(cal, list) and cal:
+        parts.append("; ".join(",".join(f"{k}={v}" for k, v in sorted(d.items())) for d in cal if isinstance(d, dict)))
+    if plist.get("WatchPaths"):
+        parts.append("watch:" + ",".join(str(p) for p in plist["WatchPaths"]))
+    if plist.get("RunAtLoad"):
+        parts.append("at-load")
+    return " + ".join(parts) or "on-demand"
+
+
+def routines():
+    """Rows of (source, name, status, schedule, target, detail) for Codex automations and macOS LaunchAgents."""
+    rows = []
+    if os.path.isdir(CODEX_AUTOMATIONS):
+        for path in sorted(glob.glob(os.path.join(CODEX_AUTOMATIONS, "*", "automation.toml"))):
+            try:
+                with open(path, encoding="utf-8", errors="replace") as handle:
+                    fields = parse_toml_fields(handle.read())
+            except OSError as exc:
+                errors.append(f"{path}: {exc}")
+                continue
+            name = fields.get("name") or fields.get("id") or os.path.basename(os.path.dirname(path))
+            thread = fields.get("target_thread_id", "")
+            rows.append((
+                "codex",
+                name,
+                fields.get("status", ""),
+                fields.get("rrule", ""),
+                f"thread:{thread[:8]}" if thread else "fresh",
+                clip(fields.get("prompt", ""), 180),
+            ))
+    if os.path.isdir(LAUNCH_AGENTS):
+        for path in sorted(glob.glob(os.path.join(LAUNCH_AGENTS, "*.plist"))):
+            try:
+                with open(path, "rb") as handle:
+                    plist = plistlib.load(handle)
+            except (OSError, plistlib.InvalidFileException, ValueError) as exc:
+                errors.append(f"{path}: {exc}")
+                continue
+            args = plist.get("ProgramArguments") or ([plist["Program"]] if plist.get("Program") else [])
+            rows.append((
+                "launchd",
+                plist.get("Label") or os.path.basename(path),
+                "disabled" if plist.get("Disabled") else "enabled",
+                plist_schedule(plist),
+                tilde(os.path.realpath(path)),
+                clip(" ".join(str(a) for a in args), 180),
+            ))
+    return rows
+
+
 def run_report(args):
     since = local_midnight(args.since)
     until = local_midnight(args.until, days=1) if args.until else None
@@ -928,16 +1051,22 @@ def run_report(args):
     for s in sessions:
         s.events = [e for e in s.events if inside(e[0])]
         s.commands = [c for c in s.commands if inside(c[0])]
+        s.tokens = [t for t in s.tokens if inside(t[0])]
         s.start = min((e[0] for e in s.events), default=None)
     sessions = [s for s in sessions if s.events]
     sessions.sort(key=lambda s: s.start or since)
 
     counts = collections.Counter(s.harness for s in sessions)
     print("# harnesses read: " + (", ".join(f"{h} ({counts[h]} sessions)" for h in found) or "none"))
-    print("\n## sessions\nharness\tsession\tstart\tcwd\tsubagents\tretro\tfirst prompt")
+    print("\n## sessions\nharness\tsession\tstart\tcwd\tsubagents\tturns\ttokens\tretro\tfirst prompt")
     for s in sessions:
-        first = next((t for _, k, t in s.events if k == "user" and not t.lstrip().startswith(SKIP_USER)), "")
-        print(f"{s.harness}\t{s.id}\t{local(s.start)}\t{s.cwd}\t{s.subagents}\t{'yes' if s.retro else ''}\t{clip(first, 120)}")
+        user_turns = [t for _, k, t in s.events if k == "user" and not t.lstrip().startswith(SKIP_USER)]
+        first = user_turns[0] if user_turns else ""
+        total_tokens = sum(n for _, n in s.tokens)
+        print(
+            f"{s.harness}\t{s.id}\t{local(s.start)}\t{s.cwd}\t{s.subagents}\t{len(user_turns)}\t"
+            f"{total_tokens or ''}\t{'yes' if s.retro else ''}\t{clip(first, 120)}"
+        )
 
     print("\n## signals (retro sessions skipped)\nsession\ttime\tkind\texcerpt")
     for s in sessions:
@@ -971,6 +1100,10 @@ def run_report(args):
         for group in groups.values():
             pr, *rest = group[0]
             print("\t".join([pr + (f" (+{len(group) - 1} more)" if len(group) > 1 else "")] + rest))
+
+    print("\n## routines\nsource\tname\tstatus\tschedule\ttarget\tdetail")
+    for row in routines():
+        print("\t".join(row))
 
     print("\n## memories\nharness\tmodified\tsessions\tpath\tdescription")
     for row in memories():
