@@ -711,6 +711,16 @@ def signals(session):
             seen_calls[text] += 1
             if seen_calls[text] == 3:
                 yield ts, "repeated-call", text
+    last = None
+    for idx, event in enumerate(session.events):
+        if event[1] != "meta" and event[0] is not None:
+            key = (event[0], idx)
+            if last is None or key > last[0]:
+                last = (key, event)
+    if last is not None:
+        ts, kind, text = last[1]
+        if kind in ("interrupt", "result-error") or (kind == "user" and text.startswith("[Request interrupted")):
+            yield ts, "abandoned", text
 
 
 def split_commands(command):
