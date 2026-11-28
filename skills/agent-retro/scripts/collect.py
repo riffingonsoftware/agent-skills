@@ -7,7 +7,8 @@ Usage:
 
 Reads the session logs of each supported harness that exists on this machine
 and skips the rest. Prints tab-separated sections: harnesses, sessions,
-signals, repeated commands, PR comments, routines, memories, and Remove-When trailers.
+signals, repeated commands, PR comments, routines, memories, Remove-When trailers, and
+denials of the hook tags those trailers name.
 PR comments need an authenticated gh and are skipped without one. Subagent sessions are
 folded into the session that started them; sessions that ran agent-retro, or a skill
 named like it (see RETRO_SKILL), are listed but their signals are skipped; one-shot sessions (see one_shot) are dropped. Exits 2 when a log line can't be parsed.
@@ -876,6 +877,31 @@ def remove_when(repos):
     return rows
 
 
+# A deny hook's message starts with a fixed tag, such as [t3-worktree-hook], that its Remove-When trailer names.
+HOOK_TAG = re.compile(r"\[[\w-]+-hook\]")
+# Claude Code logs a denial as "<tool>: PreToolUse:<tool> hook error: <message>", with "[<hook command>]: " before the
+# message when the hook exits 2. Matching only there skips errors that merely repeat a command quoting the tag.
+HOOK_ERROR = re.compile(r"[^\n]*?PreToolUse:\S+ hook error: (?:\[[^\n]*?\]: )?(\[[\w-]+-hook\])")
+HOOK_DAYS = 30
+
+
+def hook_denials(tags):
+    # A working deny hook still leaves its denied calls in the logs, so its trailer counts them over HOOK_DAYS whatever
+    # the timeframe. Ceilings: this loads the logs a second time, and only Claude Code's denial format counts.
+    counts = {tag: collections.Counter() for tag in tags}
+    if not tags:
+        return counts
+    since = dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=HOOK_DAYS)
+    found, sessions = load_all(since)
+    mark_briefs(sessions)
+    for s in fold(sessions, codex_index() if "codex" in found else {}):
+        for ts, kind, text in s.events:
+            match = HOOK_ERROR.match(text) if kind == "result-error" and ts and ts >= since else None
+            if match and match.group(1) in counts:
+                counts[match.group(1)][s.id[:8]] += 1
+    return counts
+
+
 def gh_json(endpoint, *fields):
     args = ["gh", "api", "-X", "GET", "--paginate", "--slurp", endpoint] + [f for field in fields for f in ("-f", field)]
     result = subprocess.run(args, capture_output=True, text=True)
@@ -1121,9 +1147,15 @@ def run_report(args):
 
     repos = {r for r in (git_root(s.cwd) for s in sessions) if r}
     repos.update(git_root(os.path.expanduser(r)) or os.path.realpath(os.path.expanduser(r)) for r in args.repo)
+    trailers = remove_when(repos)
     print("\n## Remove-When trailers\nrepo\tcommit\tdate\tsubject\tcondition")
-    for row in remove_when(repos):
+    for row in trailers:
         print("\t".join(row))
+
+    tags = sorted({tag for row in trailers for tag in HOOK_TAG.findall(row[-1])})
+    print(f"\n## hook tags in trailers: denied calls in the last {HOOK_DAYS} days\ntag\tdenials\tsessions")
+    for tag, sessions_by_id in hook_denials(tags).items():
+        print(f"{tag}\t{sum(sessions_by_id.values())}\t{', '.join(sorted(sessions_by_id))}")
 
 
 def run_context(args):
